@@ -1,0 +1,9 @@
+{"type":"attachment","cwd":"D:\\proj\\a"}
+{"type":"user","isMeta":true,"cwd":"D:\\proj\\a","message":{"role":"user","content":[{"type":"text","text":"meta noise"}]}}
+{"type":"user","cwd":"D:\\proj\\a","message":{"role":"user","content":"first question"}}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"answer one"},{"type":"tool_use","id":"t1","name":"Read","input":{}}]}}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"t1","content":"file text"}]}}
+{"type":"assistant","isSidechain":true,"message":{"role":"assistant","content":[{"type":"text","text":"sidechain"}]}}
+{"type":"mode","mode":"x"}
+not json at all
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"answer two"}]}}
