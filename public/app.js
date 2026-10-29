@@ -1,5 +1,5 @@
 import { renderMarkdown } from '/public/md.js';
-import { openPicker, basename } from '/public/picker.js';
+import { openPicker, basename, samePath } from '/public/picker.js';
 import { composeContent } from '/public/compose.js';
 import { attachSlashMenu } from '/public/slash.js';
 import { avatar, thinkingAvatar, flash, loadThemes } from '/public/theme.js';
@@ -19,6 +19,7 @@ const state = {
   commands: [], // the CLI's slash commands for the running chat (for the / menu)
   hookWarned: new Set(), // hook names already reported for this conversation
   starting: null, // promise while a chat is being started ahead of the first message
+  chatCwd: null, // folder of the running chat
   attachments: [], // { name, kind: 'image'|'file', status: 'busy'|'ok'|'fail', block?, thumb?, path?, error? }
 };
 
@@ -204,6 +205,7 @@ async function startChat(resume) {
     throw e;
   }
   state.alive = true;
+  state.chatCwd = cwd; // the folder the running chat really works in (the field may be edited afterwards)
   localStorageSet('cwd', cwd);
   updateFolderBtn();
 }
@@ -373,7 +375,7 @@ function browse() {
 
 // A different folder means a different project: end the chat so messages and attachments stay together.
 async function chooseFolder(path) {
-  if (path === $('cwd').value.trim()) return;
+  if (state.busy || samePath(path, $('cwd').value.trim())) return;
   $('cwd').value = path;
   localStorageSet('cwd', path);
   state.alive = false;
@@ -414,7 +416,7 @@ const drawerOpen = () => $('side').classList.contains('open');
 
 // Working-folder button label: the folder's own name, full path on hover.
 function updateFolderBtn() {
-  const path = $('cwd').value.trim();
+  const path = (state.alive && state.chatCwd) || $('cwd').value.trim();
   $('folderBtn').textContent = basename(path) || 'Choose folder';
   $('folderBtn').title = path;
 }

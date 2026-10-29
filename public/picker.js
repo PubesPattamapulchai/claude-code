@@ -24,6 +24,33 @@ export function basename(path) {
   return crumbs.length ? crumbs[crumbs.length - 1].label : '';
 }
 
+const winLike = (path) => /^[A-Za-z]:/.test(path) || path.includes('\\');
+function canon(path) {
+  if (winLike(path)) {
+    const s = path.replace(/\//g, '\\').toLowerCase();
+    return /^[a-z]:\\$/.test(s) ? s : s.replace(/\\+$/, ''); // keep the backslash of a drive root
+  }
+  return path.length > 1 ? path.replace(/\/+$/, '') : path;
+}
+
+// Same folder? Windows paths ignore case, slash direction and trailing separators; POSIX paths are exact.
+export const samePath = (a, b) => !!a && !!b && canon(a) === canon(b);
+
+// Wraps an async function so only the newest call counts: older ones resolve { stale: true } (their errors are dropped).
+export function latestOnly(fn) {
+  let latest = 0;
+  return async (...args) => {
+    const id = ++latest;
+    try {
+      const value = await fn(...args);
+      return id === latest ? { stale: false, value } : { stale: true };
+    } catch (e) {
+      if (id === latest) throw e;
+      return { stale: true };
+    }
+  };
+}
+
 const ERRORS = {
   bad_path: 'That folder is not available.',
   denied: 'Windows would not let the app open that folder.',
@@ -43,6 +70,7 @@ async function listing(path) {
 // Shows the dialog. `start` may be '' (the server picks D:\ or the first drive).
 export async function openPicker({ start, recents, onSelect }) {
   const dlg = $('picker');
+  const fetchDir = latestOnly(listing); // a slow answer must never overwrite a newer one
   let here = '';
   const sepOf = (p) => (p.includes('/') && !p.includes('\\') ? '/' : '\\');
   const join = (dir, name) => `${dir}${dir.endsWith(sepOf(dir)) ? '' : sepOf(dir)}${name}`;
@@ -81,7 +109,10 @@ export async function openPicker({ start, recents, onSelect }) {
   }
 
   async function go(path) {
-    try { render(await listing(path)); } catch (e) { showError(ERRORS[e.message] ?? 'Could not open that folder.'); }
+    try {
+      const r = await fetchDir(path);
+      if (!r.stale) render(r.value);
+    } catch (e) { showError(ERRORS[e.message] ?? 'Could not open that folder.'); }
   }
 
   const recentBox = $('recentBox');
@@ -99,6 +130,10 @@ export async function openPicker({ start, recents, onSelect }) {
   $('pickerCancel').onclick = () => dlg.close();
   $('pickerSelect').onclick = () => { const chosen = here; dlg.close(); if (chosen) onSelect(chosen); };
 
-  try { render(await listing(start)); } catch { await go(''); } // the working folder may be gone: fall back to the default
+  // Open at once with a loading line; the listing can take a moment (a slow drive).
   if (!dlg.open) dlg.showModal();
+  $('dirList').replaceChildren(el('li', 'empty', 'Loading…'));
+  const first = await fetchDir(start).catch(() => null);
+  if (first === null) await go(''); // the working folder may be gone: fall back to the default
+  else if (!first.stale) render(first.value);
 }
