@@ -1,4 +1,5 @@
 import { renderMarkdown } from '/public/md.js';
+import { avatar, thinkingAvatar, flash, loadThemes } from '/public/theme.js';
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
@@ -30,20 +31,29 @@ function setBusy(on) {
   $('send').disabled = on;
   $('stop').hidden = !on;
   $('mode').disabled = on;
+  document.querySelector('#messages .thinking')?.remove();
+  if (on) {
+    const row = el('div', 'msg thinking');
+    row.append(thinkingAvatar(), el('div', 'bubble', 'Working on it…'));
+    $('messages').append(row);
+    scrollDown();
+  }
 }
 function scrollDown() { const m = $('messages'); m.scrollTop = m.scrollHeight; }
-
-// Overridden once themes load (theme.js): who is speaking, as an avatar element.
-export const avatars = { make: (role) => el('div', 'avatar', role === 'user' ? '🙂' : '⚡') };
+// New content goes above the "working" row while a turn is running.
+function place(node) {
+  const t = document.querySelector('#messages .thinking');
+  if (t) t.before(node); else $('messages').append(node);
+}
 
 function addMessage(role) {
   const row = el('div', `msg ${role}`);
   const bubble = el('div', 'bubble');
-  row.append(avatars.make(role), bubble);
-  $('messages').append(row);
+  row.append(avatar(role), bubble);
+  place(row);
   return bubble;
 }
-function addNote(text) { $('messages').append(el('div', 'note', text)); scrollDown(); }
+function addNote(text) { place(el('div', 'note', text)); scrollDown(); }
 
 function gist(input) {
   const v = input?.command ?? input?.file_path ?? input?.pattern ?? input?.path ?? input?.url ?? input?.description ?? '';
@@ -58,7 +68,7 @@ function addToolCard(block) {
   const result = el('pre', null, 'Waiting for result…');
   d.append(s, input, result);
   card.append(d);
-  $('messages').append(card);
+  place(card);
   state.tools.set(block.id, { card, result });
 }
 
@@ -105,13 +115,14 @@ function handle(e) {
       state.live = null;
       setBusy(false);
       if (e.isError && !state.loginHint) banner(e.text || 'Claude reported an error.');
+      flash(e.isError ? 'error' : 'done');
       refreshSessions();
       break;
     case 'login_required':
       state.loginHint = true;
       banner('Claude is not logged in. Run `claude` in a terminal, log in, then try again.');
       break;
-    case 'error': setBusy(false); banner(e.message); break;
+    case 'error': setBusy(false); banner(e.message); flash('error'); break;
     case 'exit': state.alive = false; setBusy(false); state.live = null; break;
   }
 }
@@ -370,5 +381,6 @@ $('mode').addEventListener('change', () => {
 function applyMode(mode) { state.mode = mode; state.alive = false; } // next send respawns the child with --resume
 
 connectEvents();
+await loadThemes();
 await loadRecents();
 await refreshSessions();
