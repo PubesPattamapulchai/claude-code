@@ -17,12 +17,6 @@ export function onAccent(hex) {
 }
 export const isVideo = (url) => /\.(mp4|webm)$/i.test(url ?? '');
 export const mediaFor = (theme, slot) => ({ url: theme.media?.[slot], icon: theme.icon });
-export function groupThemes(list) {
-  const groups = new Map();
-  for (const t of list) groups.set(t.group, [...(groups.get(t.group) ?? []), t]);
-  return [...groups];
-}
-
 // ── rotation: wall-clock time -> theme, identical in every tab and across reloads ──
 export const SLOT_MS = 60000;
 
@@ -58,8 +52,13 @@ export function themeAt(themes, start, now) {
   return themes[lapOrder(n, start, Math.floor(slot / n))[slot % n]];
 }
 
+// The stored rotation start, or `now` when it is missing, malformed or in the future.
+export function resolveStart(raw, now) {
+  const v = raw === null || raw === undefined || raw.trim() === '' ? NaN : Number(raw);
+  return Number.isFinite(v) && v >= 0 && v <= now ? v : now;
+}
+
 // ── browser side ──
-let themes = [];
 let current = null;
 const root = () => document.documentElement;
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -130,21 +129,24 @@ export function applyTheme(t) {
   for (const row of document.querySelectorAll('.msg')) {
     row.querySelector('.avatar')?.replaceWith(row.classList.contains('thinking') ? thinkingAvatar() : avatar(row.classList.contains('user') ? 'user' : 'claude'));
   }
-  store.set('theme', t.key);
 }
 
 export async function loadThemes() {
-  themes = await (await fetch('/api/themes')).json();
-  const select = document.getElementById('themeSelect');
-  select.replaceChildren(...groupThemes(themes).map(([group, list]) => {
-    const og = document.createElement('optgroup');
-    og.label = group;
-    og.append(...list.map((t) => Object.assign(document.createElement('option'), { value: t.key, textContent: `${t.hero} (${t.label})` })));
-    return og;
-  }));
-  const wanted = themes.find((t) => t.key === store.get('theme')) ?? themes.find((t) => t.key === 'deku') ?? themes[0];
-  if (!wanted) return;
-  select.value = wanted.key;
-  applyTheme(wanted);
-  select.addEventListener('change', () => applyTheme(themes.find((t) => t.key === select.value)));
+  let themes;
+  try { themes = await (await fetch('/api/themes')).json(); } catch { return; }
+  if (!Array.isArray(themes) || !themes.length) return;
+
+  const raw = store.get('rotateStart');
+  const start = resolveStart(raw, Date.now());
+  if (String(start) !== raw) store.set('rotateStart', String(start));
+
+  const tick = () => {
+    const t = themeAt(themes, start, Date.now());
+    if (t.key !== current?.key) applyTheme(t);
+  };
+  tick();
+  setInterval(tick, 1000);
+  // background timers are throttled in hidden tabs: catch up as soon as the tab is back
+  document.addEventListener('visibilitychange', tick);
+  window.addEventListener('focus', tick);
 }

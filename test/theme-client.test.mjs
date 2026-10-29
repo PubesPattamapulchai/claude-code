@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { onAccent, isVideo, mediaFor, groupThemes, themeAt, SLOT_MS } from '../public/theme.js';
+import { onAccent, isVideo, mediaFor, themeAt, SLOT_MS, resolveStart } from '../public/theme.js';
 
 test('onAccent picks the text colour with the higher contrast', () => {
   assert.equal(onAccent('#ffd23f'), '#0c0e1d'); // gold: dark ink
@@ -21,11 +21,6 @@ test('mediaFor returns the slot url and always the emoji fallback', () => {
   assert.deepEqual(mediaFor(t, 'bg'), { url: '/themes/a/bg.mp4', icon: '🧠' });
   assert.deepEqual(mediaFor(t, 'claude'), { url: undefined, icon: '🧠' });
   assert.deepEqual(mediaFor({ icon: 'x' }, 'bg'), { url: undefined, icon: 'x' });
-});
-
-test('groupThemes keeps first-seen group order and theme order inside groups', () => {
-  const list = [{ key: 'a', group: 'G1' }, { key: 'b', group: 'G2' }, { key: 'c', group: 'G1' }];
-  assert.deepEqual(groupThemes(list).map(([g, ts]) => [g, ts.map((t) => t.key)]), [['G1', ['a', 'c']], ['G2', ['b']]]);
 });
 
 const list = (n) => Array.from({ length: n }, (_, i) => ({ key: 'k' + i }));
@@ -71,4 +66,13 @@ test('themeAt clamps time before start to slot 0', () => {
 test('themeAt handles one theme and no themes', () => {
   assert.equal(themeAt(list(1), 0, 9e9).key, 'k0');
   assert.equal(themeAt([], 0, 0), undefined);
+});
+
+test('resolveStart accepts a past timestamp and rejects everything else', () => {
+  assert.equal(resolveStart('1234', 5000), 1234);
+  assert.equal(resolveStart('1234.5', 5000), 1234.5);
+  assert.equal(resolveStart('0', 5000), 0);
+  for (const bad of [null, undefined, 'abc', '', ' ', '-10', '9000', 'NaN', 'Infinity']) {
+    assert.equal(resolveStart(bad, 5000), 5000, String(bad));
+  }
 });
