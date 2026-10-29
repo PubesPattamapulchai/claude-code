@@ -42,3 +42,13 @@ test('readHistory rejects a non-uuid id', async () => {
 test('unknown project dir gives empty list', async () => {
   assert.deepEqual(await listSessions('Z:\\nope', { home }), []);
 });
+
+test('listSessions titles strip slash-command markup', async () => {
+  const { mkdtemp, mkdir, writeFile } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const h = await mkdtemp(`${tmpdir()}/lui-home-`);
+  await mkdir(`${h}/.claude/projects/Z--t`, { recursive: true });
+  const line = { type: 'user', cwd: 'Z:/t', message: { role: 'user', content: '<command-message>grilling</command-message> <command-args>plan the app</command-args>' } };
+  await writeFile(`${h}/.claude/projects/Z--t/dddddddd-dddd-4ddd-8ddd-ddddddddddd4.jsonl`, JSON.stringify(line) + '\n');
+  assert.equal((await listSessions('Z:/t', { home: h }))[0].title, 'grilling plan the app');
+});
