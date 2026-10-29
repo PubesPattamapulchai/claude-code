@@ -194,3 +194,26 @@ test('POST /api/close ends the chat: a new event stream replays no session and s
   assert.equal(s.events.some((e) => e.kind === 'exit'), false, 'closing on purpose must not look like a crash to the UI');
   s.close(); s2.close();
 });
+
+test('a new event stream replays the command list of the running chat', async () => {
+  const s = sse();
+  await post('/api/chat', { cwd, mode: 'manual' });
+  await s.until((e) => e.kind === 'commands');
+  const s2 = sse();
+  await s2.until((e) => e.kind === 'commands');
+  const names = (st) => st.events.find((e) => e.kind === 'commands').commands.map((c) => c.name);
+  assert.deepEqual(names(s2), names(s));
+  assert.ok(names(s2).includes('ponytail:ponytail-help'));
+  s.close(); s2.close();
+});
+
+test('the cached command list is dropped when the chat is closed', async () => {
+  const s = sse();
+  await post('/api/chat', { cwd, mode: 'manual' });
+  await s.until((e) => e.kind === 'commands');
+  await post('/api/close', {});
+  const s2 = sse();
+  await new Promise((r) => setTimeout(r, 600));
+  assert.equal(s2.events.some((e) => e.kind === 'commands'), false);
+  s.close(); s2.close();
+});
