@@ -4,7 +4,7 @@ import http from 'node:http';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname, parse } from 'node:path';
-import { listDirs, listDrives, defaultStart } from '../lib/dirs.js';
+import { listDirs, listDrives, defaultStart, createDriveLister } from '../lib/dirs.js';
 import { createApp } from '../lib/app.js';
 
 const TOKEN = 'tok-' + 'f00dcafe'.repeat(4);
@@ -94,4 +94,23 @@ test('GET /api/dirs maps errors to 400 bad_path', async () => {
     assert.equal(r.status, 400, bad);
     assert.equal(r.body.error, 'bad_path');
   }
+});
+
+test('listDrives never starts a second check for a drive whose last check is still running', async () => {
+  const calls = new Map();
+  const access = (d) => { calls.set(d, (calls.get(d) ?? 0) + 1); return d === 'C:\\' || d === 'D:\\' ? Promise.resolve() : new Promise(() => {}); };
+  const list = createDriveLister({ access, timeoutMs: 30, ttlMs: 0, platform: 'win32' });
+  assert.deepEqual(await list(), ['C:\\', 'D:\\']);
+  assert.deepEqual(await list(), ['C:\\', 'D:\\']);
+  assert.equal(calls.get('Z:\\'), 1, 'a dead drive must not get a second check while the first still hangs');
+  assert.equal(calls.get('C:\\'), 2);
+});
+
+test('listDrives caches its answer for ttlMs', async () => {
+  let n = 0;
+  const list = createDriveLister({ access: async () => { n++; }, ttlMs: 60_000, platform: 'win32' });
+  await list();
+  const first = n;
+  await list();
+  assert.equal(n, first);
 });

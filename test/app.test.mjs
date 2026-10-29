@@ -180,3 +180,17 @@ test('replacing a chat does not leak the old chat exit event to the UI', async (
   assert.equal(s.events.some((e) => e.kind === 'exit'), false);
   s.close();
 });
+
+test('POST /api/close ends the chat: a new event stream replays no session and sends are refused', async () => {
+  const s = sse();
+  await post('/api/chat', { cwd, mode: 'manual' });
+  await post('/api/send', say('hi'));
+  await s.until((e) => e.kind === 'result');
+  assert.equal((await post('/api/close', {})).status, 200);
+  const s2 = sse();
+  await new Promise((r) => setTimeout(r, 700)); // the killed child's exit would land in this window
+  assert.equal(s2.events.some((e) => e.kind === 'init'), false, 'a closed chat must not be replayed to new connections');
+  assert.equal((await post('/api/send', say('again'))).status, 409);
+  assert.equal(s.events.some((e) => e.kind === 'exit'), false, 'closing on purpose must not look like a crash to the UI');
+  s.close(); s2.close();
+});

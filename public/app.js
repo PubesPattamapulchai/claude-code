@@ -360,6 +360,11 @@ async function chooseFolder(path) {
   localStorageSet('cwd', path);
   state.alive = false;
   clearConversation();
+  // Images travel as base64, but a file was saved under the old folder, out of reach of Claude in the new one.
+  state.attachments = state.attachments.filter((a) => a.kind === 'image');
+  renderTray();
+  // End the old chat on the server too, or a reload (or an event-stream reconnect) would resume it in the wrong folder.
+  await api('/api/close', {}).catch(() => {});
   updateFolderBtn();
   await refreshSessions();
   closeDrawer();
