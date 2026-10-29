@@ -11,6 +11,7 @@ const state = {
   live: null, // { bubble, text } while an assistant reply is streaming
   tools: new Map(), // tool_use id -> { card, result }
   permQueue: [],
+  attachments: [], // { name, kind: 'image'|'file', status: 'busy'|'ok'|'fail', block?, thumb?, path?, error? }
 };
 
 // ── api ──
@@ -221,27 +222,104 @@ async function loadRecents() {
 }
 
 // ── sending ──
-export async function sendMessage(content, echo) {
-  if (state.busy) return;
+// Resolves true once the server accepted the message.
+async function sendMessage(content, echo) {
+  if (state.busy) return false;
   banner('');
   if (!state.alive) {
-    try { await startChat(state.sessionId ?? undefined); } catch { return; }
+    try { await startChat(state.sessionId ?? undefined); } catch { return false; }
   }
-  echo();
   setBusy(true);
   try { await api('/api/send', { content }); } catch (e) {
-    if (e.message === 'no_chat') { state.alive = false; setBusy(false); banner('The chat process ended. Press Send again to resume.'); return; }
     setBusy(false);
-    banner(`Send failed: ${e.message}`);
+    if (e.message === 'no_chat') { state.alive = false; banner('The chat process ended. Press Send again to resume.'); } else banner(`Send failed: ${e.message}`);
+    return false;
+  }
+  echo();
+  return true;
+}
+
+// ── attachments ──
+const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+const MAX_FILE = 25 * 1024 * 1024;
+let pastedCount = 0;
+
+function renderTray() {
+  const tray = $('tray');
+  tray.textContent = '';
+  for (const a of state.attachments) {
+    const chip = el('div', `chip${a.status === 'busy' ? ' busy' : ''}${a.status === 'fail' ? ' fail' : ''}`);
+    if (a.thumb) { const img = el('img'); img.src = a.thumb; img.alt = ''; chip.append(img); }
+    chip.append(el('span', 'label', a.status === 'fail' ? `${a.name} (${a.error})` : a.name));
+    const x = el('button', null, '×');
+    x.type = 'button';
+    x.setAttribute('aria-label', `Remove ${a.name}`);
+    x.onclick = () => { state.attachments = state.attachments.filter((o) => o !== a); renderTray(); };
+    chip.append(x);
+    tray.append(chip);
   }
 }
 
-function submitText(text) {
-  const t = text.trim();
-  if (!t) return;
+function readAsDataUrl(file) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(file); });
+}
+
+async function addFile(file) {
+  if (file.size > MAX_FILE) { banner(`${file.name || 'That file'} is larger than 25 MB and was not attached.`); return; }
+  const isImage = IMAGE_TYPES.includes(file.type);
+  const name = file.name && file.name !== 'image.png' ? file.name : `pasted-${++pastedCount}.${(file.type.split('/')[1] || 'png').replace('jpeg', 'jpg')}`;
+  const a = { name, kind: isImage ? 'image' : 'file', status: 'busy' };
+  state.attachments.push(a);
+  renderTray();
+  try {
+    if (isImage) {
+      a.thumb = await readAsDataUrl(file);
+      a.block = { type: 'image', source: { type: 'base64', media_type: file.type, data: a.thumb.split(',')[1] } };
+    } else {
+      const cwd = $('cwd').value.trim();
+      const res = await fetch(`/api/upload?cwd=${encodeURIComponent(cwd)}&name=${encodeURIComponent(name)}`, { method: 'POST', body: file });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error === 'bad_cwd' ? 'pick a working folder first' : data.error === 'too_large' ? 'over 25 MB' : 'upload failed');
+      a.path = data.path;
+    }
+    a.status = 'ok';
+  } catch (e) {
+    a.status = 'fail';
+    a.error = e.message;
+  }
+  renderTray();
+}
+const addFiles = (files) => Promise.all([...files].map(addFile));
+
+async function submitComposer() {
+  const typed = $('input').value.trim();
+  const atts = state.attachments;
+  if (atts.some((a) => a.status === 'busy')) { banner('Wait for the attachments to finish uploading.'); return; }
+  const ready = atts.filter((a) => a.status === 'ok');
+  if (!typed && !ready.length) return;
+
+  const images = ready.filter((a) => a.kind === 'image');
+  const files = ready.filter((a) => a.kind === 'file');
+  const text = [typed || (images.length ? 'See the attached image.' : 'See the attached file.'),
+    files.length ? `Attached files:\n${files.map((f) => `- ${f.path}`).join('\n')}` : ''].filter(Boolean).join('\n\n');
+  const content = [...images.map((a) => a.block), { type: 'text', text }];
+
+  const sent = await sendMessage(content, () => {
+    const bubble = addMessage('user');
+    if (images.length) {
+      const row = el('div', 'thumbs');
+      for (const a of images) { const img = el('img'); img.src = a.thumb; img.alt = a.name; row.append(img); }
+      bubble.append(row);
+    }
+    bubble.append(document.createTextNode(typed));
+    if (files.length) bubble.append(el('div', 'files', `Attached: ${files.map((f) => f.name).join(', ')}`));
+    scrollDown();
+  });
+  if (!sent) return;
   $('input').value = '';
+  state.attachments = state.attachments.filter((a) => a.status === 'fail');
+  renderTray();
   autosize();
-  sendMessage([{ type: 'text', text: t }], () => { addMessage('user').textContent = t; scrollDown(); });
 }
 
 function autosize() { const i = $('input'); i.style.height = 'auto'; i.style.height = `${Math.min(i.scrollHeight, window.innerHeight * 0.4)}px`; }
@@ -256,7 +334,23 @@ function closeDrawer() { $('side').classList.remove('open'); }
 // ── wiring ──
 $('cwdForm').addEventListener('submit', (e) => { e.preventDefault(); newChat(); });
 $('cwd').addEventListener('change', refreshSessions);
-$('composer').addEventListener('submit', (e) => { e.preventDefault(); submitText($('input').value); });
+$('composer').addEventListener('submit', (e) => { e.preventDefault(); submitComposer(); });
+$('attach').addEventListener('click', () => $('file').click());
+$('file').addEventListener('change', () => { addFiles($('file').files); $('file').value = ''; });
+window.addEventListener('paste', (e) => {
+  const files = e.clipboardData?.files;
+  if (files?.length) { e.preventDefault(); addFiles(files); }
+});
+let dragDepth = 0;
+const hasFiles = (e) => [...(e.dataTransfer?.types ?? [])].includes('Files');
+window.addEventListener('dragenter', (e) => { if (hasFiles(e)) { dragDepth++; $('drop').hidden = false; } });
+window.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+window.addEventListener('dragleave', (e) => { if (hasFiles(e) && --dragDepth <= 0) { dragDepth = 0; $('drop').hidden = true; } });
+window.addEventListener('drop', (e) => {
+  if (!hasFiles(e)) return;
+  e.preventDefault(); dragDepth = 0; $('drop').hidden = true;
+  addFiles(e.dataTransfer.files);
+});
 $('input').addEventListener('input', autosize);
 $('input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('composer').requestSubmit(); }
