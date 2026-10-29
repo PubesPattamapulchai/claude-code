@@ -1,4 +1,6 @@
 // Applies a theme: colours, hero name, motto, background and avatar media. Pure helpers are exported for tests.
+import { STYLES, styleFor } from './art.js';
+
 const INK = '#0c0e1d';
 const MOTTO = { hero: 'Go beyond, Plus Ultra! 💪', villain: 'Go beyond, Plus Chaos! 😈' };
 
@@ -125,6 +127,25 @@ export function flash(slot) {
 
 const FADE_MS = 600; // keep in sync with the CSS transition/animation below
 
+// Generated background for a theme without its own media: a CSS-drawn layer (see .art-* in style.css).
+let artMap = null;
+function artNode(t) {
+  const p = artMap?.get(t.key);
+  const el = document.createElement('div');
+  el.className = `art art-${p?.style ?? STYLES[0]}`;
+  if (p) {
+    el.style.setProperty('--angle', `${p.angle.toFixed(1)}deg`);
+    el.style.setProperty('--density', p.density.toFixed(3));
+    el.style.setProperty('--phase', p.phase.toFixed(3));
+  }
+  const mark = document.createElement('span');
+  mark.className = 'mark';
+  mark.setAttribute('aria-hidden', 'true');
+  mark.textContent = t.icon;
+  el.append(mark);
+  return el;
+}
+
 export function applyTheme(t) {
   const first = !current;
   current = t;
@@ -137,14 +158,12 @@ export function applyTheme(t) {
   document.getElementById('motto').textContent = t.villain ? MOTTO.villain : MOTTO.hero;
 
   const bg = document.getElementById('bg');
-  // The new background fades in over the old one; with no new media the old one fades out to the gradient.
+  // The new background (the user's media, else generated art) fades in over the old one, which is then removed.
   const old = [...bg.children];
   const animate = !first && !reduced();
-  if (t.media?.bg) {
-    const next = mediaNode('bg');
-    if (animate) next.classList.add('fade-in');
-    bg.append(next);
-  } else if (animate) old.forEach((c) => { c.classList.remove('fade-in'); c.classList.add('fade-out'); });
+  const next = t.media?.bg ? mediaNode('bg') : artNode(t);
+  if (animate) next.classList.add('fade-in');
+  bg.append(next);
   if (animate && old.length) setTimeout(() => old.forEach((c) => c.remove()), FADE_MS);
   else old.forEach((c) => c.remove());
 
@@ -160,6 +179,8 @@ export async function loadThemes() {
   let themes;
   try { themes = await (await fetch('/api/themes')).json(); } catch { return; }
   if (!Array.isArray(themes) || !themes.length) return;
+
+  try { artMap = styleFor(themes); } catch { artMap = null; } // a colour group that outgrows the styles must not stop the app
 
   const raw = store.get('rotateStart');
   const start = resolveStart(raw, Date.now());
