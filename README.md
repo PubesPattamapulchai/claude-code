@@ -19,7 +19,7 @@ Not logged in? Run `claude` once in a terminal and log in, then retry.
 
 ## Themes and your own media
 
-Pick a character in the top bar. Each theme is `themes/<key>/theme.json` (colours, icon, hero name). Media is optional and found by file name. Drop files in `themes/<key>/`:
+There is no picker: the character changes by itself every minute, through all 108 in a shuffled order that never repeats inside a lap (one lap is 108 minutes). Every tab shows the same character and a reload keeps your place. To restart the rotation, delete the `rotateStart` entry from the page's local storage. Each theme is `themes/<key>/theme.json` (colours, icon, hero name). Media is optional and found by file name. Drop files in `themes/<key>/`:
 
 | File | Where it shows |
 |---|---|

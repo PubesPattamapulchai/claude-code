@@ -17,14 +17,62 @@ export function onAccent(hex) {
 }
 export const isVideo = (url) => /\.(mp4|webm)$/i.test(url ?? '');
 export const mediaFor = (theme, slot) => ({ url: theme.media?.[slot], icon: theme.icon });
-export function groupThemes(list) {
-  const groups = new Map();
-  for (const t of list) groups.set(t.group, [...(groups.get(t.group) ?? []), t]);
-  return [...groups];
+// ── rotation: wall-clock time -> theme, identical in every tab and across reloads ──
+export const SLOT_MS = 60000;
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// The plain seeded shuffle of 0..n-1 for one lap.
+function shuffled(n, start, lap) {
+  const rand = mulberry32((Math.floor(start) ^ Math.imul(lap + 1, 0x9e3779b1)) >>> 0);
+  const order = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  return order;
+}
+
+// Order for one lap. A lap that would open on the theme the previous lap closed on swaps its first two,
+// so no theme shows twice in a row across the boundary.
+function lapOrder(n, start, lap) {
+  if (n <= 2) { // the swap can change the last entry too, so replay the chain (n this small never happens in practice)
+    let last = -1;
+    let order;
+    for (let l = 0; l <= lap; l++) {
+      order = shuffled(n, start, l);
+      if (n > 1 && order[0] === last) [order[0], order[1]] = [order[1], order[0]];
+      last = order[n - 1];
+    }
+    return order;
+  }
+  // For n > 2 the swap only touches positions 0 and 1, so the previous lap's last entry is just its plain shuffle's last:
+  // constant cost however many laps have passed.
+  const order = shuffled(n, start, lap);
+  if (lap > 0 && order[0] === shuffled(n, start, lap - 1)[n - 1]) [order[0], order[1]] = [order[1], order[0]];
+  return order;
+}
+
+export function themeAt(themes, start, now) {
+  const n = themes.length;
+  if (!n) return undefined;
+  const slot = Math.max(0, Math.floor((now - start) / SLOT_MS));
+  return themes[lapOrder(n, start, Math.floor(slot / n))[slot % n]];
+}
+
+// The stored rotation start, or `now` when it is missing, malformed or in the future.
+export function resolveStart(raw, now) {
+  const v = raw === null || raw === undefined || raw.trim() === '' ? NaN : Number(raw);
+  return Number.isFinite(v) && v >= 0 && v <= now ? v : now;
 }
 
 // ── browser side ──
-let themes = [];
 let current = null;
 const root = () => document.documentElement;
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -75,7 +123,10 @@ export function flash(slot) {
   flashTimer = setTimeout(() => f.classList.remove('show'), 2500);
 }
 
+const FADE_MS = 600; // keep in sync with the CSS transition/animation below
+
 export function applyTheme(t) {
+  const first = !current;
   current = t;
   const r = root();
   r.style.setProperty('--accent', t.accent);
@@ -86,8 +137,16 @@ export function applyTheme(t) {
   document.getElementById('motto').textContent = t.villain ? MOTTO.villain : MOTTO.hero;
 
   const bg = document.getElementById('bg');
-  bg.replaceChildren();
-  if (t.media?.bg) bg.append(mediaNode('bg'));
+  // The new background fades in over the old one; with no new media the old one fades out to the gradient.
+  const old = [...bg.children];
+  const animate = !first && !reduced();
+  if (t.media?.bg) {
+    const next = mediaNode('bg');
+    if (animate) next.classList.add('fade-in');
+    bg.append(next);
+  } else if (animate) old.forEach((c) => { c.classList.remove('fade-in'); c.classList.add('fade-out'); });
+  if (animate && old.length) setTimeout(() => old.forEach((c) => c.remove()), FADE_MS);
+  else old.forEach((c) => c.remove());
 
   const brand = document.getElementById('brandIcon');
   brand.replaceChildren(mediaNode('claude'));
@@ -95,21 +154,24 @@ export function applyTheme(t) {
   for (const row of document.querySelectorAll('.msg')) {
     row.querySelector('.avatar')?.replaceWith(row.classList.contains('thinking') ? thinkingAvatar() : avatar(row.classList.contains('user') ? 'user' : 'claude'));
   }
-  store.set('theme', t.key);
 }
 
 export async function loadThemes() {
-  themes = await (await fetch('/api/themes')).json();
-  const select = document.getElementById('themeSelect');
-  select.replaceChildren(...groupThemes(themes).map(([group, list]) => {
-    const og = document.createElement('optgroup');
-    og.label = group;
-    og.append(...list.map((t) => Object.assign(document.createElement('option'), { value: t.key, textContent: `${t.hero} (${t.label})` })));
-    return og;
-  }));
-  const wanted = themes.find((t) => t.key === store.get('theme')) ?? themes.find((t) => t.key === 'deku') ?? themes[0];
-  if (!wanted) return;
-  select.value = wanted.key;
-  applyTheme(wanted);
-  select.addEventListener('change', () => applyTheme(themes.find((t) => t.key === select.value)));
+  let themes;
+  try { themes = await (await fetch('/api/themes')).json(); } catch { return; }
+  if (!Array.isArray(themes) || !themes.length) return;
+
+  const raw = store.get('rotateStart');
+  const start = resolveStart(raw, Date.now());
+  if (String(start) !== raw) store.set('rotateStart', String(start));
+
+  const tick = () => {
+    const t = themeAt(themes, start, Date.now());
+    if (t.key !== current?.key) applyTheme(t);
+  };
+  tick();
+  setInterval(tick, 1000);
+  // background timers are throttled in hidden tabs: catch up as soon as the tab is back
+  document.addEventListener('visibilitychange', tick);
+  window.addEventListener('focus', tick);
 }
