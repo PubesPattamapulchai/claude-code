@@ -1,0 +1,205 @@
+{
+  "asset": "hero",
+  "note": "Codex: generate a background-free hero.png for each item and record prompt, destination and status. Claude handles cropping, conversion, installing and app code afterwards.",
+  "destination": "themes/_generated/<key>/hero.png",
+  "items": [
+    {
+      "key": "aoyama",
+      "status": "pending",
+      "destination": "themes/_generated/aoyama/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/aoyama/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "ashido",
+      "status": "pending",
+      "destination": "themes/_generated/ashido/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/ashido/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "asui",
+      "status": "pending",
+      "destination": "themes/_generated/asui/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/asui/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "bakugo",
+      "status": "pending",
+      "destination": "themes/_generated/bakugo/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/bakugo/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "deku",
+      "status": "pending",
+      "destination": "themes/_generated/deku/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/deku/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "hagakure",
+      "status": "pending",
+      "destination": "themes/_generated/hagakure/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/hagakure/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "iida",
+      "status": "pending",
+      "destination": "themes/_generated/iida/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/iida/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "jiro",
+      "status": "pending",
+      "destination": "themes/_generated/jiro/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/jiro/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "kaminari",
+      "status": "pending",
+      "destination": "themes/_generated/kaminari/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/kaminari/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "kirishima",
+      "status": "pending",
+      "destination": "themes/_generated/kirishima/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/kirishima/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "koda",
+      "status": "pending",
+      "destination": "themes/_generated/koda/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/koda/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "mineta",
+      "status": "pending",
+      "destination": "themes/_generated/mineta/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/mineta/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "momo",
+      "status": "pending",
+      "destination": "themes/_generated/momo/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/momo/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "ojiro",
+      "status": "pending",
+      "destination": "themes/_generated/ojiro/hero.png",
+      "reference_scene": null,
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "sato",
+      "status": "pending",
+      "destination": "themes/_generated/sato/hero.png",
+      "reference_scene": null,
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "sero",
+      "status": "pending",
+      "destination": "themes/_generated/sero/hero.png",
+      "reference_scene": null,
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "shinzo",
+      "status": "pending",
+      "destination": "themes/_generated/shinzo/hero.png",
+      "reference_scene": null,
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "shoji",
+      "status": "pending",
+      "destination": "themes/_generated/shoji/hero.png",
+      "reference_scene": null,
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "todoroki",
+      "status": "pending",
+      "destination": "themes/_generated/todoroki/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/todoroki/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "tokoyami",
+      "status": "pending",
+      "destination": "themes/_generated/tokoyami/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/tokoyami/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "uraraka",
+      "status": "pending",
+      "destination": "themes/_generated/uraraka/hero.png",
+      "reference_scene": null,
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    },
+    {
+      "key": "shigaraki",
+      "status": "pending",
+      "destination": "themes/_generated/shigaraki/hero.png",
+      "reference_scene": "themes/_generated/_background-archive/shigaraki/bg.png",
+      "prompt": null,
+      "checks": null,
+      "notes": null
+    }
+  ]
+}
