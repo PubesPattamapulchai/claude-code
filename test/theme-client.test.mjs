@@ -96,7 +96,7 @@ function referenceKey(themes, start, now) {
 }
 
 test('themeAt matches the lap-by-lap reference for many starts, laps and sizes', () => {
-  for (const n of [3, 5, 108]) {
+  for (const n of [3, 5, 88, 108]) {
     const ts = list(n);
     for (let s = 0; s < 40; s++) {
       const start = 1_793_000_000_000 + s * 12_345_679;

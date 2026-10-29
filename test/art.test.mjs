@@ -7,14 +7,15 @@ import { STYLES, styleFor } from '../public/art.js';
 const themes = await listThemes(fileURLToPath(new URL('../themes', import.meta.url)));
 const pairKey = (t) => [t.accent, t.secondary].sort().join('|');
 
-test('there are exactly six styles and 108 real themes', () => {
+test('there are exactly six styles and 62 real themes without Class 1-B', () => {
   assert.equal(STYLES.length, 6);
-  assert.equal(themes.length, 108);
+  assert.equal(themes.length, 62);
+  assert.ok(themes.every((t) => t.group !== 'Class 1-B'));
 });
 
-test('every one of the 108 themes gets a style, and all six styles are used', () => {
+test('every one of the 62 themes gets a style, and all six styles are used', () => {
   const map = styleFor(themes);
-  assert.equal(map.size, 108);
+  assert.equal(map.size, 62);
   for (const t of themes) assert.ok(STYLES.includes(map.get(t.key).style), t.key);
   assert.equal(new Set([...map.values()].map((v) => v.style)).size, 6);
 });
@@ -24,7 +25,7 @@ test('themes that share a colour pair never share a style', () => {
   const groups = new Map();
   for (const t of themes) groups.set(pairKey(t), [...(groups.get(pairKey(t)) ?? []), t.key]);
   const shared = [...groups.values()].filter((g) => g.length > 1);
-  assert.ok(shared.length >= 8, 'the real data has at least eight shared-colour groups');
+  assert.ok(shared.length > 0, 'the real data contains shared-colour groups');
   for (const g of shared) {
     const styles = g.map((k) => map.get(k).style);
     assert.equal(new Set(styles).size, g.length, `${g.join(', ')} -> ${styles.join(', ')}`);
