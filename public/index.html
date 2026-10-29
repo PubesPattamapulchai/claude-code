@@ -67,10 +67,11 @@
     <form id="composer">
       <div id="tray" aria-label="Attachments"></div>
       <div class="row">
+        <ul id="slashMenu" role="listbox" aria-label="Commands" hidden></ul>
         <button type="button" id="attach" aria-label="Attach files">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M21 11.5 12.5 20a5.5 5.5 0 0 1-7.8-7.8l9-9a3.7 3.7 0 0 1 5.2 5.2l-9 9a1.9 1.9 0 0 1-2.6-2.6l8.3-8.3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <textarea id="input" rows="1" placeholder="Message Claude. Paste a screenshot or drop files here." aria-label="Message"></textarea>
+        <textarea id="input" rows="1" placeholder="Message Claude. Paste a screenshot or drop files here." aria-label="Message" aria-autocomplete="list" aria-controls="slashMenu" aria-expanded="false"></textarea>
         <button type="button" id="stop" hidden>Stop</button>
         <button type="submit" id="send">Send</button>
       </div>

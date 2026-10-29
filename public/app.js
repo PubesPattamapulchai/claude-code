@@ -1,6 +1,7 @@
 import { renderMarkdown } from '/public/md.js';
 import { openPicker, basename } from '/public/picker.js';
 import { composeContent } from '/public/compose.js';
+import { attachSlashMenu } from '/public/slash.js';
 import { avatar, thinkingAvatar, flash, loadThemes } from '/public/theme.js';
 
 const $ = (id) => document.getElementById(id);
@@ -15,6 +16,9 @@ const state = {
   tools: new Map(), // tool_use id -> { card, result }
   permQueue: [],
   recents: [], // projects seen in earlier sessions, newest first
+  commands: [], // the CLI's slash commands for the running chat (for the / menu)
+  hookWarned: new Set(), // hook names already reported for this conversation
+  starting: null, // promise while a chat is being started ahead of the first message
   attachments: [], // { name, kind: 'image'|'file', status: 'busy'|'ok'|'fail', block?, thumb?, path?, error? }
 };
 
@@ -61,7 +65,7 @@ function addMessage(role) {
 function addNote(text) { place(el('div', 'note', text)); scrollDown(); }
 
 function gist(input) {
-  const v = input?.command ?? input?.file_path ?? input?.pattern ?? input?.path ?? input?.url ?? input?.description ?? '';
+  const v = input?.skill ?? input?.command ?? input?.file_path ?? input?.pattern ?? input?.path ?? input?.url ?? input?.description ?? '';
   return String(v).split('\n')[0].slice(0, 120);
 }
 function addToolCard(block) {
@@ -107,6 +111,19 @@ function toolResult(e) {
 function handle(e) {
   switch (e.kind) {
     case 'init': state.sessionId = e.sessionId; break;
+    case 'commands':
+      state.commands = e.commands;
+      if (document.activeElement === $('input')) slash.refresh();
+      break;
+    case 'reset': // /clear: a new conversation with a new session id
+      clearConversation();
+      state.permQueue.length = 0;
+      if ($('perm').open) $('perm').close();
+      state.sessionId = e.sessionId;
+      break;
+    case 'hook_warning':
+      if (!state.hookWarned.has(e.name)) { state.hookWarned.add(e.name); addNote(`Hook "${e.name}" failed: ${e.message}`); }
+      break;
     case 'text_delta':
       if (!state.live) state.live = { bubble: addMessage('assistant'), text: '' };
       state.live.text += e.text;
@@ -164,6 +181,7 @@ function clearConversation() {
   state.live = null;
   state.sessionId = null;
   state.loginHint = false;
+  state.hookWarned.clear();
   banner('');
 }
 
@@ -246,6 +264,7 @@ async function loadRecents() {
 async function sendMessage(content, echo) {
   if (state.busy) return false;
   banner('');
+  if (state.starting) await state.starting;
   if (!state.alive) {
     try { await startChat(state.sessionId ?? undefined); } catch { return false; }
   }
@@ -421,6 +440,13 @@ window.addEventListener('drop', (e) => {
   addFiles(e.dataTransfer.files);
 });
 $('input').addEventListener('input', autosize);
+// Typing "/" before any chat exists: start one now so the CLI can tell us its commands (no API call is made).
+$('input').addEventListener('input', () => {
+  if ($('input').value.startsWith('/') && !state.alive && !state.starting && $('cwd').value.trim()) {
+    state.starting = startChat(state.sessionId ?? undefined).catch(() => {}).finally(() => { state.starting = null; });
+  }
+});
+const slash = attachSlashMenu({ input: $('input'), menu: $('slashMenu'), getCommands: () => state.commands }); // before the Enter handler below
 $('input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('composer').requestSubmit(); }
 });
