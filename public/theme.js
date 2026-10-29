@@ -109,7 +109,10 @@ export function flash(slot) {
   flashTimer = setTimeout(() => f.classList.remove('show'), 2500);
 }
 
+const FADE_MS = 600; // keep in sync with the CSS transition/animation below
+
 export function applyTheme(t) {
+  const first = !current;
   current = t;
   const r = root();
   r.style.setProperty('--accent', t.accent);
@@ -120,8 +123,16 @@ export function applyTheme(t) {
   document.getElementById('motto').textContent = t.villain ? MOTTO.villain : MOTTO.hero;
 
   const bg = document.getElementById('bg');
-  bg.replaceChildren();
-  if (t.media?.bg) bg.append(mediaNode('bg'));
+  // The new background fades in over the old one; with no new media the old one fades out to the gradient.
+  const old = [...bg.children];
+  const animate = !first && !reduced();
+  if (t.media?.bg) {
+    const next = mediaNode('bg');
+    if (animate) next.classList.add('fade-in');
+    bg.append(next);
+  } else if (animate) old.forEach((c) => { c.classList.remove('fade-in'); c.classList.add('fade-out'); });
+  if (animate && old.length) setTimeout(() => old.forEach((c) => c.remove()), FADE_MS);
+  else old.forEach((c) => c.remove());
 
   const brand = document.getElementById('brandIcon');
   brand.replaceChildren(mediaNode('claude'));
