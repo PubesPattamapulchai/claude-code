@@ -1,5 +1,6 @@
 // Scripted stand-in for `claude -p --input-format stream-json` used by tests.
 import { createInterface } from 'node:readline';
+import { appendFileSync } from 'node:fs';
 
 const SID = '00000000-0000-4000-8000-000000000001';
 const out = (o) => process.stdout.write(JSON.stringify(o) + '\n');
@@ -41,3 +42,9 @@ createInterface({ input: process.stdin }).on('line', (l) => {
     waiting.delete(m.response.request_id);
   }
 });
+
+// Optional liveness signal so tests can tell whether this process is still running.
+if (process.env.FAKE_HEARTBEAT) {
+  setInterval(() => appendFileSync(process.env.FAKE_HEARTBEAT, '.'), 100);
+  setTimeout(() => process.exit(0), 8000); // safety net: never outlive a failed test for long
+}

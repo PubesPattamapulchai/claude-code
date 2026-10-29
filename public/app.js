@@ -366,7 +366,7 @@ $('input').addEventListener('input', autosize);
 $('input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('composer').requestSubmit(); }
 });
-$('stop').addEventListener('click', async () => { await api('/api/interrupt', {}).catch(() => {}); addNote('Stopped.'); });
+$('stop').addEventListener('click', async () => { await api('/api/interrupt', {}).catch(() => {}); addNote('Stopped. Claude may not remember the interrupted message.'); });
 $('menu').addEventListener('click', () => $('side').classList.toggle('open'));
 $('mode').addEventListener('change', () => {
   const next = $('mode').value;

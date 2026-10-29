@@ -120,3 +120,31 @@ test('interrupt kills the child and emits exit', async () => {
   await until((e) => e.kind === 'exit');
   assert.equal(chat.busy, false);
 });
+
+test('interrupt kills the whole process tree, not just the shell wrapper', { skip: process.platform !== 'win32' }, async () => {
+  const { statSync } = await import('node:fs');
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const beat = `${tmpdir()}/lui-beat-${Date.now()}.txt`;
+  process.env.FAKE_HEARTBEAT = beat;
+  try {
+    const { chat, until } = start({ command: ['cmd.exe', '/c', process.execPath, FAKE] });
+    chat.send(say('hi'));
+    await until((e) => e.kind === 'result');
+    await sleep(300); // let the grandchild write a few heartbeats
+    chat.interrupt();
+    await until((e) => e.kind === 'exit');
+    await sleep(600);
+    const a = statSync(beat).size;
+    await sleep(600);
+    assert.equal(statSync(beat).size, a, 'heartbeat kept growing: the claude process survived interrupt()');
+  } finally { delete process.env.FAKE_HEARTBEAT; }
+});
+
+test('a deliberate interrupt emits exit but no error event', async () => {
+  const { chat, events, until } = start();
+  chat.send(say('WRITE'));
+  await until((e) => e.kind === 'permission');
+  chat.interrupt();
+  await until((e) => e.kind === 'exit');
+  assert.equal(events.some((e) => e.kind === 'error'), false);
+});
