@@ -23,6 +23,41 @@ export function groupThemes(list) {
   return [...groups];
 }
 
+// ── rotation: wall-clock time -> theme, identical in every tab and across reloads ──
+export const SLOT_MS = 60000;
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Shuffled index order for one lap; each lap starts on a different theme than the previous lap ended on.
+function lapOrder(n, start, lap) {
+  let last = -1;
+  let order;
+  for (let l = 0; l <= lap; l++) {
+    const rand = mulberry32((Math.floor(start) ^ Math.imul(l + 1, 0x9e3779b1)) >>> 0);
+    order = Array.from({ length: n }, (_, i) => i);
+    for (let i = n - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    if (n > 1 && order[0] === last) [order[0], order[1]] = [order[1], order[0]];
+    last = order[n - 1];
+  }
+  return order;
+}
+
+export function themeAt(themes, start, now) {
+  const n = themes.length;
+  if (!n) return undefined;
+  const slot = Math.max(0, Math.floor((now - start) / SLOT_MS));
+  return themes[lapOrder(n, start, Math.floor(slot / n))[slot % n]];
+}
+
 // ── browser side ──
 let themes = [];
 let current = null;
