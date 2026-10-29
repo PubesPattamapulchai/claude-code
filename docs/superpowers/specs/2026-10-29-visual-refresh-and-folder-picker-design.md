@@ -77,3 +77,9 @@ Exact colours, opacity values, gradient recipes and the four background styles; 
 
 ## How it will be checked
 Existing 62 tests stay green. New tests for: choosing a background style from a theme key (stable, covers all styles across the 108 themes, no empty result); the directory-listing route (hidden folders filtered, files omitted, parent and drives reported, bad and UNC paths rejected, no access without the token). Visual checks in a real browser for the layout, the drawer, the picker, readable text over each generated style, and the reduced-motion path.
+
+## Calls made after the builder check (the writer's, not the user's)
+
+- **Themes that share colours.** 108 themes use only 99 distinct colour pairs (eight groups share a pair, five themes are near-identical yellow). So: six background styles, not four; within a group of themes that share a colour pair, styles are dealt out by sorted key so no two of them get the same style; every theme also gets its own emoji as a faint large watermark in the art. Style choice is a pure function of the theme list, with a test that proves same-colour themes never share a style.
+- **Picking a folder while a chat exists.** The Browse button is disabled while Claude is working. Choosing a folder different from the current one ends the current chat and clears the conversation, so messages and attachments always go to the same folder. Choosing the same folder changes nothing.
+- **Drives.** Every drive letter is checked with a short timeout and dropped if it does not answer, so a dead network drive cannot hang the picker. The picker opens at `D:\` when no working folder is set, and at the working folder when one is.
