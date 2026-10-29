@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { crumbsOf, basename, samePath, latestOnly } from '../public/picker.js';
+import { crumbsOf, basename, samePath, latestOnly, currentFolder } from '../public/picker.js';
 
 test('crumbsOf splits a Windows path into clickable segments', () => {
   assert.deepEqual(crumbsOf('D:\\POE\\claude-code'), [
@@ -80,4 +80,11 @@ test('latestOnly: a lone call is fresh, its error rejects, and a stale call erro
   gates[0]();
   assert.deepEqual(await newer, { stale: false, value: 'new' });
   assert.deepEqual(await older, { stale: true });
+});
+
+test('currentFolder is the running chat folder while a chat is alive, else the typed field', () => {
+  assert.equal(currentFolder({ alive: true, chatCwd: 'D:\\A' }, '  D:\\B  '), 'D:\\A');
+  assert.equal(currentFolder({ alive: false, chatCwd: 'D:\\A' }, '  D:\\B  '), 'D:\\B');
+  assert.equal(currentFolder({ alive: true, chatCwd: null }, 'D:\\B'), 'D:\\B');
+  assert.equal(currentFolder({ alive: false, chatCwd: null }, ''), '');
 });

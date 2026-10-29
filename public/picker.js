@@ -36,6 +36,10 @@ function canon(path) {
 // Same folder? Windows paths ignore case, slash direction and trailing separators; POSIX paths are exact.
 export const samePath = (a, b) => !!a && !!b && canon(a) === canon(b);
 
+// The folder the user is working in: the running chat's folder while a chat is alive, else what is typed in the field.
+// The top-bar label and the "same folder?" check must agree on this.
+export const currentFolder = (state, field) => (state.alive && state.chatCwd) || field.trim();
+
 // Wraps an async function so only the newest call counts: older ones resolve { stale: true } (their errors are dropped).
 export function latestOnly(fn) {
   let latest = 0;

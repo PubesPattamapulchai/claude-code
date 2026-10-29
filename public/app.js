@@ -1,5 +1,5 @@
 import { renderMarkdown } from '/public/md.js';
-import { openPicker, basename, samePath } from '/public/picker.js';
+import { openPicker, basename, samePath, currentFolder } from '/public/picker.js';
 import { composeContent } from '/public/compose.js';
 import { attachSlashMenu } from '/public/slash.js';
 import { avatar, thinkingAvatar, flash, loadThemes } from '/public/theme.js';
@@ -112,6 +112,11 @@ function toolResult(e) {
 function handle(e) {
   switch (e.kind) {
     case 'init': state.sessionId = e.sessionId; break;
+    case 'chat': // the server has a running chat (this tab started it, or we reloaded / opened another tab): adopt it
+      state.alive = true;
+      state.chatCwd = e.cwd;
+      updateFolderBtn();
+      break;
     case 'commands':
       state.commands = e.commands;
       if (document.activeElement === $('input')) slash.refresh();
@@ -375,7 +380,7 @@ function browse() {
 
 // A different folder means a different project: end the chat so messages and attachments stay together.
 async function chooseFolder(path) {
-  if (state.busy || samePath(path, $('cwd').value.trim())) return;
+  if (state.busy || samePath(path, currentFolder(state, $('cwd').value))) return;
   $('cwd').value = path;
   localStorageSet('cwd', path);
   state.alive = false;
@@ -418,7 +423,7 @@ const drawerOpen = () => $('side').classList.contains('open');
 
 // Working-folder button label: the folder's own name, full path on hover.
 function updateFolderBtn() {
-  const path = (state.alive && state.chatCwd) || $('cwd').value.trim();
+  const path = currentFolder(state, $('cwd').value);
   $('folderBtn').textContent = basename(path) || 'Choose folder';
   $('folderBtn').title = path;
 }
