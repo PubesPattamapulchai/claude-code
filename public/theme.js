@@ -168,9 +168,11 @@ export function applyTheme(t) {
   const first = !current;
   current = t;
   const r = root();
+  if (first) r.style.transition = 'none'; // the very first colours snap in instead of fading from the defaults
   r.style.setProperty('--accent', t.accent);
   r.style.setProperty('--secondary', t.secondary);
   r.style.setProperty('--on-accent', onAccent(t.accent));
+  if (first) { void r.offsetWidth; r.style.transition = ''; }
   r.dataset.villain = String(!!t.villain);
   document.getElementById('heroName').textContent = t.hero;
   document.getElementById('motto').textContent = t.villain ? MOTTO.villain : MOTTO.hero;

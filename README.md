@@ -1,6 +1,6 @@
 # Plus Ultra Terminal
 
-A local web app that wraps the installed `claude` CLI. Paste screenshots, drop files, and skin the whole thing as any of 108 My Hero Academia characters, with your own gifs, images and videos.
+A local web app that wraps the installed `claude` CLI. Paste screenshots, drop files, and watch the app skin itself as each of 108 My Hero Academia characters in turn, with your own gifs, images and videos if you add them.
 
 Everything runs on your machine. It uses the Claude Code login you already have.
 
@@ -14,7 +14,9 @@ Not logged in? Run `claude` once in a terminal and log in, then retry.
 
 - Streams replies, renders markdown and code, shows each tool call as a collapsible card.
 - Asks before every tool runs (permission dialog). Modes: ask every time, accept edits, plan only, bypass all (needs a red confirmation).
-- Uses Claude Code's own session store, so chats started in a terminal show up in the sidebar and `claude --resume` sees chats started here.
+- Uses Claude Code's own session store, so chats started in a terminal show up in the sessions drawer (the menu button, top left) and `claude --resume` sees chats started here.
+- Pick the project with the folder button in the top bar, or Browse in the drawer. The picker opens at your `D:\` drive (or at the current folder), you walk into sub-folders, and recent projects are one click away. Choosing a different folder starts fresh so messages and attachments stay with one project. You can still type a path.
+- The title card shows the current character and a countdown to the next one.
 - Attach with Ctrl+V (screenshots), drag and drop, or the paperclip. Images go to Claude directly. Other files are saved to `<folder>/.claude-uploads/` and Claude reads them by path. Limit 25 MB per file.
 
 ## Themes and your own media
@@ -30,7 +32,7 @@ There is no picker: the character changes by itself every minute, through all 10
 | `error.*` | Pops up on errors |
 | `user.*` | Your avatar for this theme |
 
-`themes/_user.png` (any supported extension) is your avatar for every theme that has no `user.*` of its own. Missing files fall back to the character's emoji and a gradient from the theme colours. Media files are git-ignored: bring your own.
+`themes/_user.png` (any supported extension) is your avatar for every theme that has no `user.*` of its own. A theme with no `bg.*` gets a generated animated background instead: one of six manga-style patterns (speed lines, halftone burst, stripes, comic grid, sunburst, checkers) drawn from the theme's two colours, with the character's emoji as a faint watermark. It is drawn by the page itself, so there is nothing to download, and your own `bg.*` always wins. Avatars fall back to the character's emoji. Media files are git-ignored: bring your own.
 
 To regenerate the theme files from `mha-statusline`:
 

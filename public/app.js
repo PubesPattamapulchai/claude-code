@@ -120,6 +120,7 @@ function handle(e) {
       setBusy(false);
       if (e.isError && !state.loginHint) banner(e.text || 'Claude reported an error.');
       flash(e.isError ? 'error' : 'done');
+      if (!e.isError && document.hidden) document.title = `✓ ${baseTitle}`; // cue for a tab you are not looking at
       refreshSessions();
       break;
     case 'login_required':
@@ -363,6 +364,12 @@ async function chooseFolder(path) {
   await refreshSessions();
   closeDrawer();
 }
+
+// ── tab title cue ──
+const baseTitle = document.title;
+const restoreTitle = () => { if (!document.hidden) document.title = baseTitle; };
+document.addEventListener('visibilitychange', restoreTitle);
+window.addEventListener('focus', restoreTitle);
 
 // ── drawer (phones) ──
 function openDrawer() {
