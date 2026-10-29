@@ -74,6 +74,24 @@ export function resolveStart(raw, now) {
   return Number.isFinite(v) && v >= 0 && v <= now ? v : now;
 }
 
+// Whole seconds, rounded up, as m:ss.
+export function formatLeft(ms) {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+// What is showing, what comes next and how long until it does.
+export function rotationInfo(themes, start, now) {
+  if (!themes.length) return undefined;
+  const slot = Math.max(0, Math.floor((now - start) / SLOT_MS));
+  const boundary = start + (slot + 1) * SLOT_MS;
+  return {
+    current: themeAt(themes, start, start + slot * SLOT_MS),
+    next: themeAt(themes, start, boundary),
+    msLeft: boundary - Math.max(now, start),
+  };
+}
+
 // ── browser side ──
 let current = null;
 const root = () => document.documentElement;
@@ -187,8 +205,10 @@ export async function loadThemes() {
   if (String(start) !== raw) store.set('rotateStart', String(start));
 
   const tick = () => {
-    const t = themeAt(themes, start, Date.now());
-    if (t.key !== current?.key) applyTheme(t);
+    const info = rotationInfo(themes, start, Date.now());
+    if (info.current.key !== current?.key) applyTheme(info.current);
+    const countdown = document.getElementById('countdown');
+    if (countdown) countdown.textContent = `next: ${info.next.hero} in ${formatLeft(info.msLeft)}`;
   };
   tick();
   setInterval(tick, 1000);

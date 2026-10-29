@@ -116,7 +116,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     rgb(12 14 29 / var(--bg-dim));
 }
 
-#app { position: relative; z-index: 1; display: grid; grid-template-columns: 290px minmax(0, 1fr); height: 100dvh; }
+#app { position: relative; z-index: 1; height: 100dvh; }
 
 /* ── sidebar ── */
 #side {
@@ -124,8 +124,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: var(--panel); border-right: var(--edge) solid var(--accent);
  overflow: hidden;
 }
-.brand { display: flex; align-items: center; gap: 10px; min-height: 56px; }
-.brand-icon { width: 52px; height: 52px; flex: none; display: grid; place-items: center; font-size: 28px; border: var(--edge) solid var(--accent); border-radius: 50%; background: var(--ink); overflow: hidden; }
+.brand-icon { width: 46px; height: 46px; flex: none; display: grid; place-items: center; font-size: 28px; border: var(--edge) solid var(--accent); border-radius: 50%; background: var(--ink); overflow: hidden; }
 .brand-icon img, .brand-icon video { width: 100%; height: 100%; object-fit: cover; }
 .hero-name {
   font: italic 700 clamp(1.5rem, 2.6vw, 2rem)/1 var(--font-display);
@@ -158,9 +157,25 @@ button.quiet { background: transparent; box-shadow: none; border-color: transpar
 #sessions .empty { color: var(--muted); padding: 6px 10px; }
 
 /* ── stage ── */
-#stage { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-#bar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 12px 20px; background: var(--panel); border-bottom: var(--edge) solid var(--ink); }
-#menu { display: none; padding: 6px 9px; }
+#stage { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; }
+#bar { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 16px 20px 10px; background: var(--panel); border-bottom: var(--edge) solid var(--ink); }
+/* burst-line strip along the top edge, in the character colours */
+#bar::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 7px; background: repeating-linear-gradient(115deg, var(--accent) 0 18px, transparent 18px 28px, var(--secondary) 28px 38px, transparent 38px 54px); }
+#menu { padding: 6px 9px; }
+.title-card { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.title-text { display: flex; flex-direction: column; min-width: 0; }
+.countdown { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.bar-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-left: auto; }
+.folder-btn { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* sessions drawer: slides over the art on every width */
+#scrim { position: fixed; inset: 0; z-index: 25; background: rgb(6 7 16 / 0.55); }
+#scrim[hidden] { display: none; }
+#side { position: fixed; z-index: 30; top: 0; bottom: 0; left: 0; width: min(340px, 86vw); transform: translateX(-102%); transition: transform 180ms ease-out; background: var(--panel-solid); }
+#side.open { transform: none; box-shadow: 8px 0 0 rgb(0 0 0 / 0.5); }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; }
+.drawer-head h2 { margin: 0; font: italic 700 1.3rem/1 var(--font-display); color: var(--heading); }
+#closeSide { padding: 2px 10px; font-size: 20px; line-height: 1.2; }
 .field { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
 select { background: var(--ink); border: 2px solid color-mix(in srgb, var(--paper) 35%, transparent); border-radius: 4px; padding: 6px 8px; max-width: 230px; color: var(--paper); }
 select:focus { border-color: var(--accent); }
@@ -209,14 +224,14 @@ select:focus { border-color: var(--accent); }
 .tool .gist { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); font-size: 12px; }
 .tool.error details { border-color: var(--danger); }
 .tool pre { margin: 0; padding: 8px 12px; font: 12px/1.5 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 260px; overflow: auto; border-top: 2px solid color-mix(in srgb, var(--paper) 15%, transparent); }
-.note { text-align: center; color: var(--muted); font-size: 13px; }
+.note { width: fit-content; margin: 0 auto; padding: 2px 12px; border-radius: 4px; background: var(--panel); color: var(--muted); font-size: 13px; }
 
 .thinking .avatar { animation: bob 0.55s ease-in-out infinite alternate; }
 .thinking .bubble { color: var(--muted); font-style: italic; }
 @keyframes bob { to { transform: translateY(-5px) rotate(-6deg); } }
 
 /* ── composer ── */
-#composer { padding: 12px 20px 8px; background: var(--panel); border-top: var(--edge) solid var(--ink); }
+#composer { padding: 12px 20px 8px; }
 #composer .row { display: flex; gap: 10px; align-items: flex-end; max-width: 860px; margin: 0 auto; }
 #input { flex: 1; resize: none; max-height: 40vh; padding: 10px 12px; background: var(--ink); border: var(--edge) solid color-mix(in srgb, var(--paper) 40%, transparent); border-radius: 4px; line-height: 1.5; }
 #input:focus { border-color: var(--accent); outline: none; box-shadow: 4px 4px 0 var(--accent); }
@@ -231,7 +246,7 @@ select:focus { border-color: var(--accent); }
 .chip.fail { border-color: var(--danger); }
 .chip.busy { opacity: 0.6; }
 .chip button { padding: 0 6px; box-shadow: none; border-width: 0; background: transparent; font-size: 16px; line-height: 1; }
-#motto { padding: 4px 20px 10px; text-align: center; color: var(--muted); font: italic 600 13px var(--font-display); background: var(--panel); }
+#motto { width: fit-content; max-width: calc(100% - 24px); margin: 0 auto 10px; padding: 2px 14px; border-radius: 4px; text-align: center; color: var(--muted); font: italic 600 13px var(--font-display); background: var(--panel); }
 
 /* ── drop target, event flash, dialogs ── */
 #drop { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgb(12 14 29 / 0.82); border: 6px dashed var(--accent); }
@@ -259,10 +274,10 @@ dialog form { margin: 0; }
 
 /* ── phones: the sidebar becomes a drawer ── */
 @media (max-width: 760px) {
-  #app { grid-template-columns: minmax(0, 1fr); }
-  #side { position: fixed; z-index: 10; inset: 0 22% 0 0; transform: translateX(-102%); transition: transform 160ms ease-out; background: var(--panel-solid); }
-  #side.open { transform: none; }
-  #menu { display: block; }
+  #bar { gap: 8px 10px; padding-top: 14px; }
+  .hero-name { font-size: 1.3rem; }
+  .folder-btn { max-width: 140px; }
+  .bar-controls { margin-left: 0; gap: 8px; }
   #bar, #composer, #messages { padding-left: 12px; padding-right: 12px; }
   .avatar { width: 40px; height: 40px; font-size: 20px; }
   .bubble { max-width: calc(100% - 52px); padding: 10px 12px; }
@@ -278,4 +293,5 @@ dialog form { margin: 0; }
   #flash.show { animation: none; opacity: 1; }
   #messages { scroll-behavior: auto; }
   button { transition: none; }
+  #side { transition: none; }
 }

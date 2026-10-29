@@ -181,12 +181,14 @@ async function startChat(resume) {
   }
   state.alive = true;
   localStorageSet('cwd', cwd);
+  updateFolderBtn();
 }
 
 async function newChat() {
   clearConversation();
   try { await startChat(); } catch { return; }
   refreshSessions();
+  closeDrawer();
   $('input').focus();
 }
 
@@ -340,11 +342,33 @@ function localStorageGet(k) { try { return localStorage.getItem(k); } catch { re
 function localStorageSet(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } }
 
 // ── drawer (phones) ──
-function closeDrawer() { $('side').classList.remove('open'); }
+function openDrawer() {
+  $('side').inert = false;
+  $('side').classList.add('open');
+  $('scrim').hidden = false;
+  $('menu').setAttribute('aria-expanded', 'true');
+  $('cwd').focus();
+}
+function closeDrawer() {
+  const hadFocus = $('side').contains(document.activeElement);
+  $('side').classList.remove('open');
+  $('side').inert = true;
+  $('scrim').hidden = true;
+  $('menu').setAttribute('aria-expanded', 'false');
+  if (hadFocus) $('menu').focus();
+}
+const drawerOpen = () => $('side').classList.contains('open');
+
+// Working-folder button label: the folder's own name, full path on hover.
+function updateFolderBtn() {
+  const path = $('cwd').value.trim();
+  $('folderBtn').textContent = path ? (path.replace(/[\\/]+$/, '').split(/[\\/]/).pop() || path) : 'Choose folder';
+  $('folderBtn').title = path;
+}
 
 // ── wiring ──
 $('cwdForm').addEventListener('submit', (e) => { e.preventDefault(); newChat(); });
-$('cwd').addEventListener('change', refreshSessions);
+$('cwd').addEventListener('change', () => { updateFolderBtn(); refreshSessions(); });
 $('composer').addEventListener('submit', (e) => { e.preventDefault(); submitComposer(); });
 $('attach').addEventListener('click', () => $('file').click());
 $('file').addEventListener('change', () => { addFiles($('file').files); $('file').value = ''; });
@@ -367,7 +391,11 @@ $('input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('composer').requestSubmit(); }
 });
 $('stop').addEventListener('click', async () => { await api('/api/interrupt', {}).catch(() => {}); addNote('Stopped. Claude may not remember the interrupted message.'); });
-$('menu').addEventListener('click', () => $('side').classList.toggle('open'));
+$('menu').addEventListener('click', () => (drawerOpen() ? closeDrawer() : openDrawer()));
+$('scrim').addEventListener('click', closeDrawer);
+$('closeSide').addEventListener('click', closeDrawer);
+$('folderBtn').addEventListener('click', openDrawer); // replaced by the folder picker in the next step
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && drawerOpen() && !document.querySelector('dialog[open]')) closeDrawer(); });
 $('mode').addEventListener('change', () => {
   const next = $('mode').value;
   if (next === 'bypassPermissions') {
@@ -383,4 +411,5 @@ function applyMode(mode) { state.mode = mode; state.alive = false; } // next sen
 connectEvents();
 await loadThemes();
 await loadRecents();
+updateFolderBtn();
 await refreshSessions();

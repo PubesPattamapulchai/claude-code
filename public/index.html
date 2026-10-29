@@ -17,10 +17,11 @@
 <div id="dim" aria-hidden="true"></div>
 
 <div id="app">
-  <aside id="side" aria-label="Folders and sessions">
-    <div class="brand">
-      <span id="brandIcon" class="brand-icon" aria-hidden="true">⚡</span>
-      <span id="heroName" class="hero-name">Claude</span>
+  <div id="scrim" hidden></div>
+  <aside id="side" aria-label="Folders and sessions" inert>
+    <div class="drawer-head">
+      <h2>Sessions</h2>
+      <button type="button" id="closeSide" aria-label="Close sessions">×</button>
     </div>
     <form id="cwdForm" autocomplete="off">
       <label for="cwd">Working folder</label>
@@ -33,17 +34,27 @@
 
   <main id="stage">
     <header id="bar">
-      <button type="button" id="menu" aria-label="Show folders and sessions" aria-controls="side">
+      <button type="button" id="menu" aria-label="Show folders and sessions" aria-controls="side" aria-expanded="false">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
       </button>
-      <label class="field">Permissions
+      <div class="title-card">
+        <span id="brandIcon" class="brand-icon" aria-hidden="true">⚡</span>
+        <div class="title-text">
+          <span id="heroName" class="hero-name">Claude</span>
+          <span id="countdown" class="countdown" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="bar-controls">
+        <button type="button" id="folderBtn" class="folder-btn" aria-label="Working folder">Choose folder</button>
+        <label class="field">Permissions
         <select id="mode">
           <option value="manual">Ask every time</option>
           <option value="acceptEdits">Accept edits</option>
           <option value="plan">Plan only</option>
           <option value="bypassPermissions">Bypass all (risky)</option>
         </select>
-      </label>
+        </label>
+      </div>
     </header>
     <div id="speed" aria-hidden="true"></div>
     <div id="banner" role="alert" hidden></div>
