@@ -31,17 +31,31 @@ function mulberry32(seed) {
   };
 }
 
-// Shuffled index order for one lap; each lap starts on a different theme than the previous lap ended on.
+// The plain seeded shuffle of 0..n-1 for one lap.
+function shuffled(n, start, lap) {
+  const rand = mulberry32((Math.floor(start) ^ Math.imul(lap + 1, 0x9e3779b1)) >>> 0);
+  const order = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  return order;
+}
+
+// Order for one lap. A lap that would open on the theme the previous lap closed on swaps its first two,
+// so no theme shows twice in a row across the boundary.
 function lapOrder(n, start, lap) {
-  let last = -1;
-  let order;
-  for (let l = 0; l <= lap; l++) {
-    const rand = mulberry32((Math.floor(start) ^ Math.imul(l + 1, 0x9e3779b1)) >>> 0);
-    order = Array.from({ length: n }, (_, i) => i);
-    for (let i = n - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
-    if (n > 1 && order[0] === last) [order[0], order[1]] = [order[1], order[0]];
-    last = order[n - 1];
+  if (n <= 2) { // the swap can change the last entry too, so replay the chain (n this small never happens in practice)
+    let last = -1;
+    let order;
+    for (let l = 0; l <= lap; l++) {
+      order = shuffled(n, start, l);
+      if (n > 1 && order[0] === last) [order[0], order[1]] = [order[1], order[0]];
+      last = order[n - 1];
+    }
+    return order;
   }
+  // For n > 2 the swap only touches positions 0 and 1, so the previous lap's last entry is just its plain shuffle's last:
+  // constant cost however many laps have passed.
+  const order = shuffled(n, start, lap);
+  if (lap > 0 && order[0] === shuffled(n, start, lap - 1)[n - 1]) [order[0], order[1]] = [order[1], order[0]];
   return order;
 }
 

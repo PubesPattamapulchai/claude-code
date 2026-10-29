@@ -44,8 +44,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 #bg video, #bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 #bg > .fade-in { animation: bgfade 600ms ease-out; }
-#bg > .fade-out { animation: bgfade 600ms ease-in reverse forwards; }
+#bg > .fade-out { animation: bgout 600ms ease-in forwards; }
 @keyframes bgfade { from { opacity: 0; } }
+@keyframes bgout { to { opacity: 0; } } /* its own name: reusing bgfade would resume a finished fade-in at its end */
 #dim {
   background:
     radial-gradient(rgb(0 0 0 / 0.35) 1px, transparent 1.4px) 0 0 / 7px 7px,
