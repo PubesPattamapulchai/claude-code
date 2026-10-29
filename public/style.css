@@ -272,6 +272,27 @@ dialog pre { margin: 0 0 14px; padding: 10px 12px; max-height: 40vh; overflow: a
 dialog .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
 dialog form { margin: 0; }
 
+/* folder picker */
+#picker { width: min(640px, calc(100vw - 32px)); max-width: none; }
+#crumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.crumb { padding: 2px 8px; font: 13px var(--font-mono); box-shadow: none; }
+.crumb[aria-current] { background: var(--accent); color: var(--on-accent); }
+.picker-row { margin-bottom: 8px; }
+#recentBox h3 { margin: 8px 0 4px; color: var(--muted); font-size: 13px; font-weight: 600; }
+#recentBox[hidden] { display: none; }
+#recentList { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.recent { padding: 3px 8px; overflow: hidden; border: 2px solid transparent; background: transparent; box-shadow: none; font: 12px var(--font-mono); text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+#dirList { max-height: 36vh; margin: 0 0 10px; padding: 0; overflow-y: auto; list-style: none; border: 2px solid color-mix(in srgb, var(--paper) 22%, transparent); }
+.dir { width: 100%; padding: 6px 10px; border: 0; border-radius: 0; background: transparent; box-shadow: none; font-weight: 500; text-align: left; }
+.dir::before { content: "▸ "; color: var(--accent); }
+.dir.up::before { content: "↑ "; }
+.dir:hover:not(:disabled), .recent:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 16%, transparent); box-shadow: none; transform: none; }
+#dirList .empty { padding: 6px 10px; color: var(--muted); }
+#pickerError { margin: 0 0 8px; color: var(--danger); }
+#pickerPath { align-self: center; max-width: 55%; margin-right: auto; overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.row2 { display: flex; gap: 8px; }
+.row2 button { flex: 1; }
+
 /* ── phones: the sidebar becomes a drawer ── */
 @media (max-width: 760px) {
   #bar { gap: 8px 10px; padding-top: 14px; }

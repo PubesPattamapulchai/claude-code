@@ -1,4 +1,5 @@
 import { renderMarkdown } from '/public/md.js';
+import { openPicker, basename } from '/public/picker.js';
 import { avatar, thinkingAvatar, flash, loadThemes } from '/public/theme.js';
 
 const $ = (id) => document.getElementById(id);
@@ -12,6 +13,7 @@ const state = {
   live: null, // { bubble, text } while an assistant reply is streaming
   tools: new Map(), // tool_use id -> { card, result }
   permQueue: [],
+  recents: [], // projects seen in earlier sessions, newest first
   attachments: [], // { name, kind: 'image'|'file', status: 'busy'|'ok'|'fail', block?, thumb?, path?, error? }
 };
 
@@ -31,6 +33,8 @@ function setBusy(on) {
   $('send').disabled = on;
   $('stop').hidden = !on;
   $('mode').disabled = on;
+  $('folderBtn').disabled = on; // switching folders mid-turn would split the chat from its files
+  $('browseBtn').disabled = on;
   document.querySelector('#messages .thinking')?.remove();
   if (on) {
     const row = el('div', 'msg thinking');
@@ -230,6 +234,7 @@ async function refreshSessions() {
 }
 async function loadRecents() {
   const list = await api('/api/projects').catch(() => []);
+  state.recents = list;
   $('recents').replaceChildren(...list.map((p) => { const o = el('option'); o.value = p.cwd; return o; }));
   if (!$('cwd').value) $('cwd').value = localStorageGet('cwd') || list[0]?.cwd || '';
 }
@@ -341,6 +346,24 @@ function autosize() { const i = $('input'); i.style.height = 'auto'; i.style.hei
 function localStorageGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
 function localStorageSet(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } }
 
+// ── folder picker ──
+function browse() {
+  if (state.busy) return;
+  openPicker({ start: $('cwd').value.trim(), recents: state.recents, onSelect: chooseFolder });
+}
+
+// A different folder means a different project: end the chat so messages and attachments stay together.
+async function chooseFolder(path) {
+  if (path === $('cwd').value.trim()) return;
+  $('cwd').value = path;
+  localStorageSet('cwd', path);
+  state.alive = false;
+  clearConversation();
+  updateFolderBtn();
+  await refreshSessions();
+  closeDrawer();
+}
+
 // ── drawer (phones) ──
 function openDrawer() {
   $('side').inert = false;
@@ -362,7 +385,7 @@ const drawerOpen = () => $('side').classList.contains('open');
 // Working-folder button label: the folder's own name, full path on hover.
 function updateFolderBtn() {
   const path = $('cwd').value.trim();
-  $('folderBtn').textContent = path ? (path.replace(/[\\/]+$/, '').split(/[\\/]/).pop() || path) : 'Choose folder';
+  $('folderBtn').textContent = basename(path) || 'Choose folder';
   $('folderBtn').title = path;
 }
 
@@ -394,7 +417,8 @@ $('stop').addEventListener('click', async () => { await api('/api/interrupt', {}
 $('menu').addEventListener('click', () => (drawerOpen() ? closeDrawer() : openDrawer()));
 $('scrim').addEventListener('click', closeDrawer);
 $('closeSide').addEventListener('click', closeDrawer);
-$('folderBtn').addEventListener('click', openDrawer); // replaced by the folder picker in the next step
+$('folderBtn').addEventListener('click', browse);
+$('browseBtn').addEventListener('click', browse);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && drawerOpen() && !document.querySelector('dialog[open]')) closeDrawer(); });
 $('mode').addEventListener('change', () => {
   const next = $('mode').value;

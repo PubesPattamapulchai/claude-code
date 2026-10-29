@@ -27,7 +27,10 @@
       <label for="cwd">Working folder</label>
       <input id="cwd" list="recents" placeholder="C:\projects\my-app" spellcheck="false">
       <datalist id="recents"></datalist>
-      <button type="submit" id="newChat">New chat</button>
+      <div class="row2">
+        <button type="button" id="browseBtn">Browse…</button>
+        <button type="submit" id="newChat">New chat</button>
+      </div>
     </form>
     <nav id="sessions" aria-label="Sessions in this folder"></nav>
   </aside>
@@ -79,6 +82,20 @@
 
 <div id="drop" hidden><span>Drop files to attach</span></div>
 <div id="flash" aria-hidden="true"></div>
+
+<dialog id="picker" aria-labelledby="pickerTitle">
+  <h2 id="pickerTitle">Choose a project folder</h2>
+  <nav id="crumbs" aria-label="Folder path"></nav>
+  <label class="field picker-row">Drive <select id="drives"></select></label>
+  <div id="recentBox"><h3>Recent projects</h3><div id="recentList"></div></div>
+  <ul id="dirList"></ul>
+  <p id="pickerError" role="alert" hidden></p>
+  <div class="actions">
+    <code id="pickerPath"></code>
+    <button type="button" id="pickerCancel" class="quiet">Cancel</button>
+    <button type="button" id="pickerSelect" class="primary">Select this folder</button>
+  </div>
+</dialog>
 
 <dialog id="perm" aria-labelledby="permTitle">
   <form method="dialog">
