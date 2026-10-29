@@ -1,24 +1,72 @@
 # Theme character image generation plan (for Codex)
 
-Goal: collect a transparent portrait of the actual anime character for every one of the 62 themes. Use the character both as an avatar replacing theme symbols and as a large character overlaid at the side of the app's original colour-based generated background.
+Goal: Codex generates one large, transparent, background-free **hero** image of the actual anime character for each character in the work list below. That is the only job. Everything after generation (cropping, resizing, converting, installing, app code, tests) is done by Claude, not Codex.
 
-## Current approved scope
+## Scope
 
-This section supersedes the earlier background-generation pilot. The user approved the character artwork, then explicitly requested the original app-generated backgrounds and generation-only work before installation.
+- Generate `hero.png` for each of the 22 characters in the work list, even where an earlier version exists. Save each as `themes/_generated/<key>/hero.png`. This staging tree has no `theme.json`, so the app does not load it.
+- **No background of any kind.** No sky, city, room, floor, wall, tower, rubble, banner, water or plants. The app draws its own manga background behind the hero.
+- Do not touch the existing `claude.png` portraits (chat avatars and logo). Do not regenerate or rename them.
+- Do not crop, resize, convert, install or copy anything into theme folders. Do not change app code or `theme.json`. Do not generate any character outside the work list.
+- Use the built-in image generation tool only. No paid service or API fallback.
+- Record each result (prompt, file path, status) in [the batch manifest](theme-media-generation-batch.json) as soon as it is saved, then stop when the list is done. Skip entries already marked complete.
 
-- Generate only one square, transparent character portrait per theme. Preserve canonical anime identity, costume, nonhuman features and masks.
-- Generation is stopped by the user. Reuse completed portraits and generate only characters the user selects next; do not resume the full catalogue automatically. Class 1-B has been removed from the app and image collection.
-- Save originals as `themes/_generated/<key>/claude.png`. This staging tree has no `theme.json`, so the app does not load these files as active theme media.
-- Do not generate new background images, animation or video. Keep the app's existing generated patterns and per-theme colours.
-- The background must still show the large character, as in the approved pilot composition. Combine the existing generated background with the transparent character as separate layers; do not remove the large character. The same high-resolution character image can supply the avatar and background character layer.
-- New portraits are to be installed later, as explicitly requested. Do not copy them into active theme folders during this generation stage.
-- Previously generated backgrounds are retained under `themes/_generated/_background-archive/<key>/`. The six pilot `bg.webp` files were moved there so active pilot themes use the original generated backgrounds again.
-- Active pilot avatars remain in place. Leave user avatars, functional UI icons, app code and `theme.json` unchanged.
-- Use the built-in image generation tool and existing tools only. No new paid service or API fallback was requested.
-- Media remains local and Git-ignored; never force-add it.
-- Save each successful output into the workspace immediately and record its prompt, destination and completion status in [the batch manifest](theme-media-generation-batch.json). Resume from completed files rather than regenerating them.
+### Work list (22)
 
-## Portrait prompt
+`aoyama`, `ashido`, `asui`, `bakugo`, `deku`, `hagakure`, `iida`, `jiro`, `kaminari`, `kirishima`, `koda`, `mineta`, `momo`, `ojiro`, `sato`, `sero`, `shinzo`, `shoji`, `todoroki`, `tokoyami`, `uraraka`, `shigaraki`.
+
+## Framing rules
+
+- Character on the right side of the canvas, head in the upper half, three-quarter view facing left, dynamic pose. The body may run off the right and bottom edges.
+- Clear empty headroom above the head (at least 8% of the image height). The head, hair and horns must not touch the top edge.
+- Keep the face and important detail out of the lowest quarter of the picture.
+- A thin, clean light rim along the whole silhouette and a crisp outline, so dark clothing, hair and feathers stay readable on both dark and bright backgrounds.
+- Quirk effects (lightning, fire, ice, sparks) only on or within a hand's width of the body, semi-transparent at the outer edge. No large glow around the figure.
+
+## Fixes for characters that went wrong before
+
+An earlier version cut each character out of a landscape scene with an automatic remover. These need extra care:
+
+| Theme | Problem | Required fix |
+|---|---|---|
+| `bakugo` | Dark costume and explosions merged with the scene. Almost nothing survived. | Light rim and crisp outline around the whole body. Small sparks close to the hands only. |
+| `tokoyami` | Black feathers and cloak vanished against a dark scene. | Purple-white rim light on the beak, feathers and cloak edges. Dark Shadow aura thin and attached to the body. |
+| `shigaraki` | Only the head and a hand survived. The dark jacket was lost. | Full head, hand-on-face pose, shoulders and dark jacket with a lighter rim. No ruins or debris. |
+| `kaminari` | A factory tower stayed attached. | Character and lightning only. No tower, pipe or railing. |
+| `kirishima` | Rubble stayed attached. | Character only. No rock, debris or ground. |
+| `momo` | A tower strip stayed behind her. | Character and her creation items only. |
+| `aoyama` | A dark banner glyph stayed beside the head. | Character, cape and sparkles near the body only. No banner or pillar. |
+| `hagakure` | Gloves and boots came out as three tiny separate pieces. | Floating gloves and boots arranged as one large readable group. A faint translucent outline of the invisible body is allowed to tie them together. |
+| `ojiro`, `sato`, `sero`, `shinzo`, `shoji`, `uraraka` | No reference scene exists. | Create a scene-style pose like the others. |
+
+## Hero prompt
+
+Read identity and theme colours from `themes/<key>/theme.json`. Check ambiguous identities against the official anime character catalogue. Use the actual anime character, not an anonymous hero or a real-world person with the same name. Where it exists, use `themes/_generated/_background-archive/<key>/bg.png` as a reference for pose and costume only (never its scenery), and the existing `themes/_generated/<key>/claude.png` for face and colours.
+
+```
+One large isolated colour anime illustration of the actual My Hero Academia character {character}, three-quarter
+view from the waist up (or full body where the scene reference shows it), a dynamic confident pose facing toward
+the left of the frame, body on the right side of the canvas with the head in the upper half.
+Faithful canonical face, hair, skin, mask and costume: {character_details}. Consistent crisp linework and restrained
+cel shading, the same style as the existing portraits. Theme accents {accent} and {secondary}, retaining the
+character's real colours. {theme_specific_fix}
+A thin, clean light rim along the outer edge of the whole silhouette. The body may run off the right and bottom
+edges. Leave clear headroom (at least 8% of the image height) above the head.
+Quirk effects only on or within a hand's width of the body, semi-transparent at their outer edge.
+ABSOLUTELY NO background: no sky, city, building, tower, floor, ground, rubble, water, plants, banner, frame, border,
+vignette, floor shadow, gradient or scene. True transparent alpha background, not a drawn checkerboard.
+No added text, logos, watermark, UI or collage. Age-appropriate nonsexual character illustration.
+```
+
+If the tool cannot return real transparency, generate the same picture on one perfectly flat colour that appears nowhere in the character (`#ff00ff` magenta, or `#00ff00` for a magenta-heavy character), with no gradient, shadow or glow on the background. Save it as `hero-flat.png` and note it in the manifest. Claude will key it out.
+
+## Quick self-check before recording
+
+Each saved file opens, has a transparent (or flat single-colour) background, shows the whole head with headroom, and contains no scenery. Note anything that fails in the manifest instead of retrying more than once.
+
+## Portrait prompt (existing, unchanged)
+
+Used only for the square avatar portraits that already exist. Do not run it again unless the user asks for a specific character.
 
 Read character identity and theme colours from `themes/<key>/theme.json`. Check ambiguous identities against the official anime character catalogue. Use the actual anime character, not an anonymous hero or a real-world person with the same name.
 
@@ -33,7 +81,7 @@ drawn checkerboard, opaque scene or circular badge. No added text, logos, waterm
 Age-appropriate nonsexual character illustration.
 ```
 
-## Generation-stage checks
+## Portrait generation-stage checks (existing)
 
 1. Confirm each requested theme has a staged `claude.png`, including the six reused pilot originals.
 2. Check file signatures, decoding, dimensions and actual alpha transparency. Record any exceptions.
