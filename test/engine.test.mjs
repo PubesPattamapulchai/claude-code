@@ -28,7 +28,7 @@ test('text turn emits init, text_delta x2, assistant, result', async () => {
   chat.send(say('hi'));
   assert.equal(chat.busy, true);
   await until((e) => e.kind === 'result');
-  assert.deepEqual(events.map((e) => e.kind), ['init', 'text_delta', 'text_delta', 'assistant', 'result']);
+  assert.deepEqual(events.map((e) => e.kind).filter((k) => k !== 'commands'), ['init', 'text_delta', 'text_delta', 'assistant', 'result']);
   assert.equal(events.filter((e) => e.kind === 'text_delta').map((e) => e.text).join(''), 'Hello');
   assert.equal(chat.busy, false);
   assert.equal(chat.sessionId, '00000000-0000-4000-8000-000000000001');
@@ -170,4 +170,41 @@ test('a write racing the child exit does not crash the process', async () => {
   chat.send([{ type: 'text', text: 'x'.repeat(8 * 1024 * 1024) }]);
   await until((e) => e.kind === 'exit');
   await sleep(300); // an unhandled stdin 'error' would surface here as an uncaught exception
+});
+
+test('engine emits the command list from the initialize answer', async () => {
+  const { chat, events, until } = start();
+  await until((e) => e.kind === 'commands');
+  const names = events.find((e) => e.kind === 'commands').commands.map((c) => c.name);
+  assert.ok(names.includes('clear') && names.includes('ponytail:ponytail-help'));
+  assert.ok(names.includes('help'), 'hiding unavailable commands is the UI job, the engine reports all');
+  chat.close();
+});
+
+test('engine turns a conversation_reset into a reset event with the new session id', async () => {
+  const { chat, events, until } = start();
+  chat.send(say('/clear'));
+  await until((e) => e.kind === 'result');
+  const reset = events.find((e) => e.kind === 'reset');
+  assert.equal(reset.sessionId, '00000000-0000-4000-8000-000000000002');
+  assert.equal(chat.sessionId, '00000000-0000-4000-8000-000000000002');
+  chat.close();
+});
+
+test('engine turns a failed hook into a hook_warning and ignores a successful one', async () => {
+  const { chat, events, until } = start();
+  chat.send(say('HOOKFAIL'));
+  await until((e) => e.kind === 'result');
+  const warnings = events.filter((e) => e.kind === 'hook_warning');
+  assert.deepEqual(warnings, [{ kind: 'hook_warning', name: 'SessionStart:startup', message: 'boom' }]);
+  chat.close();
+});
+
+test('engine sends slash text to the child untouched', async () => {
+  const { chat, events, until } = start();
+  const text = '/ponytail:ponytail-help "quoted arg" with ไทย';
+  chat.send(say(text));
+  await until((e) => e.kind === 'assistant');
+  assert.equal(events.find((e) => e.kind === 'assistant').content[0].text, text);
+  chat.close();
 });
