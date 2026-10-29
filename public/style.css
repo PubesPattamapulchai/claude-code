@@ -120,7 +120,7 @@ select:focus { border-color: var(--accent); }
 .bubble :not(pre) > code { padding: 1px 5px; background: #0a0c18; border-radius: 3px; }
 .bubble table { border-collapse: collapse; margin: 0.8em 0; display: block; overflow-x: auto; }
 .bubble th, .bubble td { border: 2px solid color-mix(in srgb, var(--paper) 25%, transparent); padding: 4px 10px; }
-.bubble blockquote { margin: 0.8em 0; padding-left: 12px; border-left: 4px solid var(--secondary); color: var(--muted); }
+.bubble blockquote { margin: 0.8em 0; padding: 6px 14px; background: color-mix(in srgb, var(--secondary) 12%, transparent); border-radius: 4px; color: var(--muted); font-style: italic; }
 .bubble img { max-width: 100%; }
 .bubble .thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
 .bubble .thumbs img { max-height: 140px; border: 2px solid var(--secondary); border-radius: 3px; }

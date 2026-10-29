@@ -148,3 +148,26 @@ test('a deliberate interrupt emits exit but no error event', async () => {
   await until((e) => e.kind === 'exit');
   assert.equal(events.some((e) => e.kind === 'error'), false);
 });
+
+test('claude is not resolved from the project folder (planted claude.bat must not run)', { skip: process.platform !== 'win32' }, async () => {
+  const { mkdtemp, writeFile, access } = await import('node:fs/promises');
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const dir = await mkdtemp(`${tmpdir()}/lui-plant-`);
+  await writeFile(`${dir}/claude.bat`, '@echo off\r\necho hijacked> "%~dp0marker.txt"\r\n');
+  const saved = process.env.NoDefaultCurrentDirectoryInExePath;
+  delete process.env.NoDefaultCurrentDirectoryInExePath; // a double-clicked start.bat does not set it
+  try {
+    const chat = createChat({ cwd: dir, mode: 'manual', onEvent() {} });
+    await sleep(2000);
+    chat.close();
+    await assert.rejects(access(`${dir}/marker.txt`), 'the project folder claude.bat ran');
+  } finally { if (saved !== undefined) process.env.NoDefaultCurrentDirectoryInExePath = saved; }
+});
+
+test('a write racing the child exit does not crash the process', async () => {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const { chat, until } = start({ command: [process.execPath, '-e', 'setTimeout(() => process.exit(0), 50)'] });
+  chat.send([{ type: 'text', text: 'x'.repeat(8 * 1024 * 1024) }]);
+  await until((e) => e.kind === 'exit');
+  await sleep(300); // an unhandled stdin 'error' would surface here as an uncaught exception
+});

@@ -169,3 +169,14 @@ test('upload to a missing directory is 400', async () => {
   assert.equal(r.status, 400);
   await assert.rejects(access(join(cwd, 'nope')));
 });
+
+test('replacing a chat does not leak the old chat exit event to the UI', async () => {
+  const s = sse();
+  await post('/api/chat', { cwd, mode: 'manual' });
+  await post('/api/chat', { cwd, mode: 'plan' });
+  await post('/api/send', say('hi'));
+  await s.until((e) => e.kind === 'result');
+  await new Promise((r) => setTimeout(r, 800)); // the killed first child's exit would land in this window
+  assert.equal(s.events.some((e) => e.kind === 'exit'), false);
+  s.close();
+});
