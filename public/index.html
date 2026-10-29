@@ -17,33 +17,47 @@
 <div id="dim" aria-hidden="true"></div>
 
 <div id="app">
-  <aside id="side" aria-label="Folders and sessions">
-    <div class="brand">
-      <span id="brandIcon" class="brand-icon" aria-hidden="true">⚡</span>
-      <span id="heroName" class="hero-name">Claude</span>
+  <div id="scrim" hidden></div>
+  <aside id="side" aria-label="Folders and sessions" inert>
+    <div class="drawer-head">
+      <h2>Sessions</h2>
+      <button type="button" id="closeSide" aria-label="Close sessions">×</button>
     </div>
     <form id="cwdForm" autocomplete="off">
       <label for="cwd">Working folder</label>
       <input id="cwd" list="recents" placeholder="C:\projects\my-app" spellcheck="false">
       <datalist id="recents"></datalist>
-      <button type="submit" id="newChat">New chat</button>
+      <div class="row2">
+        <button type="button" id="browseBtn">Browse…</button>
+        <button type="submit" id="newChat">New chat</button>
+      </div>
     </form>
     <nav id="sessions" aria-label="Sessions in this folder"></nav>
   </aside>
 
   <main id="stage">
     <header id="bar">
-      <button type="button" id="menu" aria-label="Show folders and sessions" aria-controls="side">
+      <button type="button" id="menu" aria-label="Show folders and sessions" aria-controls="side" aria-expanded="false">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
       </button>
-      <label class="field">Permissions
+      <div class="title-card">
+        <span id="brandIcon" class="brand-icon" aria-hidden="true">⚡</span>
+        <div class="title-text">
+          <span id="heroName" class="hero-name">Claude</span>
+          <span id="countdown" class="countdown" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="bar-controls">
+        <button type="button" id="folderBtn" class="folder-btn" aria-label="Working folder">Choose folder</button>
+        <label class="field">Permissions
         <select id="mode">
           <option value="manual">Ask every time</option>
           <option value="acceptEdits">Accept edits</option>
           <option value="plan">Plan only</option>
           <option value="bypassPermissions">Bypass all (risky)</option>
         </select>
-      </label>
+        </label>
+      </div>
     </header>
     <div id="speed" aria-hidden="true"></div>
     <div id="banner" role="alert" hidden></div>
@@ -53,10 +67,11 @@
     <form id="composer">
       <div id="tray" aria-label="Attachments"></div>
       <div class="row">
+        <ul id="slashMenu" role="listbox" aria-label="Commands" hidden></ul>
         <button type="button" id="attach" aria-label="Attach files">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M21 11.5 12.5 20a5.5 5.5 0 0 1-7.8-7.8l9-9a3.7 3.7 0 0 1 5.2 5.2l-9 9a1.9 1.9 0 0 1-2.6-2.6l8.3-8.3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <textarea id="input" rows="1" placeholder="Message Claude. Paste a screenshot or drop files here." aria-label="Message"></textarea>
+        <textarea id="input" rows="1" placeholder="Message Claude. Paste a screenshot or drop files here." aria-label="Message" aria-autocomplete="list" aria-controls="slashMenu"></textarea>
         <button type="button" id="stop" hidden>Stop</button>
         <button type="submit" id="send">Send</button>
       </div>
@@ -68,6 +83,20 @@
 
 <div id="drop" hidden><span>Drop files to attach</span></div>
 <div id="flash" aria-hidden="true"></div>
+
+<dialog id="picker" aria-labelledby="pickerTitle">
+  <h2 id="pickerTitle">Choose a project folder</h2>
+  <nav id="crumbs" aria-label="Folder path"></nav>
+  <label class="field picker-row">Drive <select id="drives"></select></label>
+  <div id="recentBox"><h3>Recent projects</h3><div id="recentList"></div></div>
+  <ul id="dirList"></ul>
+  <p id="pickerError" role="alert" hidden></p>
+  <div class="actions">
+    <code id="pickerPath"></code>
+    <button type="button" id="pickerCancel" class="quiet">Cancel</button>
+    <button type="button" id="pickerSelect" class="primary">Select this folder</button>
+  </div>
+</dialog>
 
 <dialog id="perm" aria-labelledby="permTitle">
   <form method="dialog">

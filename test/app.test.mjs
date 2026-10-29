@@ -180,3 +180,54 @@ test('replacing a chat does not leak the old chat exit event to the UI', async (
   assert.equal(s.events.some((e) => e.kind === 'exit'), false);
   s.close();
 });
+
+test('POST /api/close ends the chat: a new event stream replays no session and sends are refused', async () => {
+  const s = sse();
+  await post('/api/chat', { cwd, mode: 'manual' });
+  await post('/api/send', say('hi'));
+  await s.until((e) => e.kind === 'result');
+  assert.equal((await post('/api/close', {})).status, 200);
+  const s2 = sse();
+  await new Promise((r) => setTimeout(r, 700)); // the killed child's exit would land in this window
+  assert.equal(s2.events.some((e) => e.kind === 'init'), false, 'a closed chat must not be replayed to new connections');
+  assert.equal((await post('/api/send', say('again'))).status, 409);
+  assert.equal(s.events.some((e) => e.kind === 'exit'), false, 'closing on purpose must not look like a crash to the UI');
+  s.close(); s2.close();
+});
+
+test('a new event stream replays the command list of the running chat', async () => {
+  const s = sse();
+  await post('/api/chat', { cwd, mode: 'manual' });
+  await s.until((e) => e.kind === 'commands');
+  const s2 = sse();
+  await s2.until((e) => e.kind === 'commands');
+  const names = (st) => st.events.find((e) => e.kind === 'commands').commands.map((c) => c.name);
+  assert.deepEqual(names(s2), names(s));
+  assert.ok(names(s2).includes('ponytail:ponytail-help'));
+  s.close(); s2.close();
+});
+
+test('the cached command list is dropped when the chat is closed', async () => {
+  const s = sse();
+  await post('/api/chat', { cwd, mode: 'manual' });
+  await s.until((e) => e.kind === 'commands');
+  await post('/api/close', {});
+  const s2 = sse();
+  await new Promise((r) => setTimeout(r, 600));
+  assert.equal(s2.events.some((e) => e.kind === 'commands'), false);
+  s.close(); s2.close();
+});
+
+test('a running chat announces itself, and new event streams are told about it', async () => {
+  const s = sse();
+  await post('/api/chat', { cwd, mode: 'manual' });
+  await s.until((e) => e.kind === 'chat');
+  const s2 = sse();
+  await s2.until((e) => e.kind === 'chat');
+  assert.equal(s2.events.find((e) => e.kind === 'chat').cwd, cwd);
+  await post('/api/close', {});
+  const s3 = sse();
+  await new Promise((r) => setTimeout(r, 600));
+  assert.equal(s3.events.some((e) => e.kind === 'chat'), false, 'a closed chat must not be announced');
+  s.close(); s2.close(); s3.close();
+});

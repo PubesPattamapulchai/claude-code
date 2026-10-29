@@ -52,3 +52,20 @@ test('listSessions titles strip slash-command markup', async () => {
   await writeFile(`${h}/.claude/projects/Z--t/dddddddd-dddd-4ddd-8ddd-ddddddddddd4.jsonl`, JSON.stringify(line) + '\n');
   assert.equal((await listSessions('Z:/t', { home: h }))[0].title, 'grilling plan the app');
 });
+
+test('readHistory shows slash commands as the user typed them, not as raw command tags', async () => {
+  const { mkdtemp, mkdir, writeFile } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const h = await mkdtemp(`${tmpdir()}/lui-home-`);
+  await mkdir(`${h}/.claude/projects/Z--t2`, { recursive: true });
+  const user = (content) => JSON.stringify({ type: 'user', cwd: 'Z:/t2', message: { role: 'user', content } });
+  const lines = [
+    user('<command-name>/clear</command-name>\n<command-message>clear</command-message>\n<command-args></command-args>'),
+    user('<command-message>mattpocock-skills:grilling</command-message>\n<command-name>/mattpocock-skills:grilling</command-name>\n<command-args>plan the app</command-args>'),
+    user('just a plain message with <b>html</b>'),
+  ];
+  const id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee5';
+  await writeFile(`${h}/.claude/projects/Z--t2/${id}.jsonl`, lines.join('\n') + '\n');
+  const texts = (await readHistory('Z:/t2', id, { home: h })).map((e) => e.text);
+  assert.deepEqual(texts, ['/clear', '/mattpocock-skills:grilling plan the app', 'just a plain message with <b>html</b>']);
+});

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { onAccent, isVideo, mediaFor, themeAt, SLOT_MS, resolveStart } from '../public/theme.js';
+import { onAccent, isVideo, mediaFor, themeAt, SLOT_MS, resolveStart, formatLeft, rotationInfo } from '../public/theme.js';
 
 test('onAccent picks the text colour with the higher contrast', () => {
   assert.equal(onAccent('#ffd23f'), '#0c0e1d'); // gold: dark ink
@@ -117,4 +117,28 @@ test('themeAt cost does not grow with the number of elapsed laps', () => {
   const t0 = performance.now();
   for (let i = 0; i < 200; i++) themeAt(ts, start, now + i * SLOT_MS);
   assert.ok(performance.now() - t0 < 400, `200 calls took ${Math.round(performance.now() - t0)} ms`);
+});
+
+test('formatLeft rounds up to whole seconds as m:ss', () => {
+  assert.equal(formatLeft(42_000), '0:42');
+  assert.equal(formatLeft(59_999), '1:00');
+  assert.equal(formatLeft(60_000), '1:00');
+  assert.equal(formatLeft(1_000), '0:01');
+  assert.equal(formatLeft(1), '0:01');
+  assert.equal(formatLeft(0), '0:00');
+  assert.equal(formatLeft(-500), '0:00');
+});
+
+test('rotationInfo returns the current theme, the next one and the time left', () => {
+  const ts = list(108);
+  const a = rotationInfo(ts, 0, 30_000);
+  assert.equal(a.current.key, themeAt(ts, 0, 30_000).key);
+  assert.equal(a.next.key, themeAt(ts, 0, 60_000).key);
+  assert.equal(a.msLeft, 30_000);
+  assert.equal(rotationInfo(ts, 0, 0).msLeft, 60_000);
+  assert.equal(rotationInfo(ts, 0, 59_999).msLeft, 1);
+  const early = rotationInfo(ts, 10_000, 0); // clock before start behaves like slot 0
+  assert.equal(early.current.key, themeAt(ts, 10_000, 10_000).key);
+  assert.equal(early.msLeft, 60_000);
+  assert.equal(rotationInfo([], 0, 0), undefined);
 });

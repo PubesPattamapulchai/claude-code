@@ -1,4 +1,6 @@
 // Applies a theme: colours, hero name, motto, background and avatar media. Pure helpers are exported for tests.
+import { STYLES, styleFor } from './art.js';
+
 const INK = '#0c0e1d';
 const MOTTO = { hero: 'Go beyond, Plus Ultra! 💪', villain: 'Go beyond, Plus Chaos! 😈' };
 
@@ -72,6 +74,24 @@ export function resolveStart(raw, now) {
   return Number.isFinite(v) && v >= 0 && v <= now ? v : now;
 }
 
+// Whole seconds, rounded up, as m:ss.
+export function formatLeft(ms) {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+// What is showing, what comes next and how long until it does.
+export function rotationInfo(themes, start, now) {
+  if (!themes.length) return undefined;
+  const slot = Math.max(0, Math.floor((now - start) / SLOT_MS));
+  const boundary = start + (slot + 1) * SLOT_MS;
+  return {
+    current: themeAt(themes, start, start + slot * SLOT_MS),
+    next: themeAt(themes, start, boundary),
+    msLeft: boundary - Math.max(now, start),
+  };
+}
+
 // ── browser side ──
 let current = null;
 const root = () => document.documentElement;
@@ -125,26 +145,45 @@ export function flash(slot) {
 
 const FADE_MS = 600; // keep in sync with the CSS transition/animation below
 
+// Generated background for a theme without its own media: a CSS-drawn layer (see .art-* in style.css).
+let artMap = null;
+function artNode(t) {
+  const p = artMap?.get(t.key);
+  const el = document.createElement('div');
+  el.className = `art art-${p?.style ?? STYLES[0]}`;
+  if (p) {
+    el.style.setProperty('--angle', `${p.angle.toFixed(1)}deg`);
+    el.style.setProperty('--density', p.density.toFixed(3));
+    el.style.setProperty('--phase', p.phase.toFixed(3));
+  }
+  const mark = document.createElement('span');
+  mark.className = 'mark';
+  mark.setAttribute('aria-hidden', 'true');
+  mark.textContent = t.icon;
+  el.append(mark);
+  return el;
+}
+
 export function applyTheme(t) {
   const first = !current;
   current = t;
   const r = root();
+  if (first) r.style.transition = 'none'; // the very first colours snap in instead of fading from the defaults
   r.style.setProperty('--accent', t.accent);
   r.style.setProperty('--secondary', t.secondary);
   r.style.setProperty('--on-accent', onAccent(t.accent));
+  if (first) { void r.offsetWidth; r.style.transition = ''; }
   r.dataset.villain = String(!!t.villain);
   document.getElementById('heroName').textContent = t.hero;
   document.getElementById('motto').textContent = t.villain ? MOTTO.villain : MOTTO.hero;
 
   const bg = document.getElementById('bg');
-  // The new background fades in over the old one; with no new media the old one fades out to the gradient.
+  // The new background (the user's media, else generated art) fades in over the old one, which is then removed.
   const old = [...bg.children];
   const animate = !first && !reduced();
-  if (t.media?.bg) {
-    const next = mediaNode('bg');
-    if (animate) next.classList.add('fade-in');
-    bg.append(next);
-  } else if (animate) old.forEach((c) => { c.classList.remove('fade-in'); c.classList.add('fade-out'); });
+  const next = t.media?.bg ? mediaNode('bg') : artNode(t);
+  if (animate) next.classList.add('fade-in');
+  bg.append(next);
   if (animate && old.length) setTimeout(() => old.forEach((c) => c.remove()), FADE_MS);
   else old.forEach((c) => c.remove());
 
@@ -161,13 +200,17 @@ export async function loadThemes() {
   try { themes = await (await fetch('/api/themes')).json(); } catch { return; }
   if (!Array.isArray(themes) || !themes.length) return;
 
+  try { artMap = styleFor(themes); } catch { artMap = null; } // styling the backgrounds must never stop the app from loading
+
   const raw = store.get('rotateStart');
   const start = resolveStart(raw, Date.now());
   if (String(start) !== raw) store.set('rotateStart', String(start));
 
   const tick = () => {
-    const t = themeAt(themes, start, Date.now());
-    if (t.key !== current?.key) applyTheme(t);
+    const info = rotationInfo(themes, start, Date.now());
+    if (info.current.key !== current?.key) applyTheme(info.current);
+    const countdown = document.getElementById('countdown');
+    if (countdown) countdown.textContent = `next: ${info.next.hero} in ${formatLeft(info.msLeft)}`;
   };
   tick();
   setInterval(tick, 1000);

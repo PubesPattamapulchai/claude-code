@@ -1,4 +1,7 @@
 import { renderMarkdown } from '/public/md.js';
+import { openPicker, basename, samePath, currentFolder } from '/public/picker.js';
+import { composeContent } from '/public/compose.js';
+import { attachSlashMenu } from '/public/slash.js';
 import { avatar, thinkingAvatar, flash, loadThemes } from '/public/theme.js';
 
 const $ = (id) => document.getElementById(id);
@@ -12,6 +15,11 @@ const state = {
   live: null, // { bubble, text } while an assistant reply is streaming
   tools: new Map(), // tool_use id -> { card, result }
   permQueue: [],
+  recents: [], // projects seen in earlier sessions, newest first
+  commands: [], // the CLI's slash commands for the running chat (for the / menu)
+  hookWarned: new Set(), // hook names already reported for this conversation
+  starting: null, // promise while a chat is being started ahead of the first message
+  chatCwd: null, // folder of the running chat
   attachments: [], // { name, kind: 'image'|'file', status: 'busy'|'ok'|'fail', block?, thumb?, path?, error? }
 };
 
@@ -31,6 +39,8 @@ function setBusy(on) {
   $('send').disabled = on;
   $('stop').hidden = !on;
   $('mode').disabled = on;
+  $('folderBtn').disabled = on; // switching folders mid-turn would split the chat from its files
+  $('browseBtn').disabled = on;
   document.querySelector('#messages .thinking')?.remove();
   if (on) {
     const row = el('div', 'msg thinking');
@@ -56,7 +66,7 @@ function addMessage(role) {
 function addNote(text) { place(el('div', 'note', text)); scrollDown(); }
 
 function gist(input) {
-  const v = input?.command ?? input?.file_path ?? input?.pattern ?? input?.path ?? input?.url ?? input?.description ?? '';
+  const v = input?.skill ?? input?.command ?? input?.file_path ?? input?.pattern ?? input?.path ?? input?.url ?? input?.description ?? '';
   return String(v).split('\n')[0].slice(0, 120);
 }
 function addToolCard(block) {
@@ -102,6 +112,24 @@ function toolResult(e) {
 function handle(e) {
   switch (e.kind) {
     case 'init': state.sessionId = e.sessionId; break;
+    case 'chat': // the server has a running chat (this tab started it, or we reloaded / opened another tab): adopt it
+      state.alive = true;
+      state.chatCwd = e.cwd;
+      updateFolderBtn();
+      break;
+    case 'commands':
+      state.commands = e.commands;
+      if (document.activeElement === $('input')) slash.refresh();
+      break;
+    case 'reset': // /clear: a new conversation with a new session id
+      clearConversation();
+      state.permQueue.length = 0;
+      if ($('perm').open) $('perm').close();
+      state.sessionId = e.sessionId;
+      break;
+    case 'hook_warning':
+      if (!state.hookWarned.has(e.name)) { state.hookWarned.add(e.name); addNote(`Hook "${e.name}" failed: ${e.message}`); }
+      break;
     case 'text_delta':
       if (!state.live) state.live = { bubble: addMessage('assistant'), text: '' };
       state.live.text += e.text;
@@ -116,6 +144,7 @@ function handle(e) {
       setBusy(false);
       if (e.isError && !state.loginHint) banner(e.text || 'Claude reported an error.');
       flash(e.isError ? 'error' : 'done');
+      if (!e.isError && document.hidden) document.title = `✓ ${baseTitle}`; // cue for a tab you are not looking at
       refreshSessions();
       break;
     case 'login_required':
@@ -123,7 +152,7 @@ function handle(e) {
       banner('Claude is not logged in. Run `claude` in a terminal, log in, then try again.');
       break;
     case 'error': setBusy(false); banner(e.message); flash('error'); break;
-    case 'exit': state.alive = false; setBusy(false); state.live = null; break;
+    case 'exit': state.alive = false; state.commands = []; setBusy(false); state.live = null; break;
   }
 }
 
@@ -158,6 +187,7 @@ function clearConversation() {
   state.live = null;
   state.sessionId = null;
   state.loginHint = false;
+  state.hookWarned.clear();
   banner('');
 }
 
@@ -180,13 +210,16 @@ async function startChat(resume) {
     throw e;
   }
   state.alive = true;
+  state.chatCwd = cwd; // the folder the running chat really works in (the field may be edited afterwards)
   localStorageSet('cwd', cwd);
+  updateFolderBtn();
 }
 
 async function newChat() {
   clearConversation();
   try { await startChat(); } catch { return; }
   refreshSessions();
+  closeDrawer({ focusMenu: false });
   $('input').focus();
 }
 
@@ -199,7 +232,7 @@ async function openSession(id) {
     await startChat(id);
   } catch { return; }
   refreshSessions();
-  closeDrawer();
+  closeDrawer({ focusMenu: false });
 }
 
 // ── sessions list ──
@@ -228,6 +261,7 @@ async function refreshSessions() {
 }
 async function loadRecents() {
   const list = await api('/api/projects').catch(() => []);
+  state.recents = list;
   $('recents').replaceChildren(...list.map((p) => { const o = el('option'); o.value = p.cwd; return o; }));
   if (!$('cwd').value) $('cwd').value = localStorageGet('cwd') || list[0]?.cwd || '';
 }
@@ -237,6 +271,7 @@ async function loadRecents() {
 async function sendMessage(content, echo) {
   if (state.busy) return false;
   banner('');
+  if (state.starting) await state.starting;
   if (!state.alive) {
     try { await startChat(state.sessionId ?? undefined); } catch { return false; }
   }
@@ -311,9 +346,7 @@ async function submitComposer() {
 
   const images = ready.filter((a) => a.kind === 'image');
   const files = ready.filter((a) => a.kind === 'file');
-  const text = [typed || (images.length ? 'See the attached image.' : 'See the attached file.'),
-    files.length ? `Attached files:\n${files.map((f) => `- ${f.path}`).join('\n')}` : ''].filter(Boolean).join('\n\n');
-  const content = [...images.map((a) => a.block), { type: 'text', text }];
+  const content = composeContent(typed, images, files);
 
   const sent = await sendMessage(content, () => {
     const bubble = addMessage('user');
@@ -339,12 +372,67 @@ function autosize() { const i = $('input'); i.style.height = 'auto'; i.style.hei
 function localStorageGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
 function localStorageSet(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } }
 
+// ── folder picker ──
+function browse() {
+  if (state.busy) return;
+  openPicker({ start: $('cwd').value.trim(), recents: state.recents, onSelect: chooseFolder });
+}
+
+// A different folder means a different project: end the chat so messages and attachments stay together.
+async function chooseFolder(path) {
+  if (state.busy || samePath(path, currentFolder(state, $('cwd').value))) return;
+  $('cwd').value = path;
+  localStorageSet('cwd', path);
+  state.alive = false;
+  state.commands = []; // they belonged to the old folder's project
+  clearConversation();
+  // Images travel as base64, but a file was saved under the old folder, out of reach of Claude in the new one.
+  state.attachments = state.attachments.filter((a) => a.kind === 'image');
+  renderTray();
+  // End the old chat on the server too, or a reload (or an event-stream reconnect) would resume it in the wrong folder.
+  await api('/api/close', {}).catch(() => {});
+  updateFolderBtn();
+  await refreshSessions();
+  closeDrawer();
+}
+
+// ── tab title cue ──
+const baseTitle = document.title;
+const restoreTitle = () => { if (!document.hidden) document.title = baseTitle; };
+document.addEventListener('visibilitychange', restoreTitle);
+window.addEventListener('focus', restoreTitle);
+
 // ── drawer (phones) ──
-function closeDrawer() { $('side').classList.remove('open'); }
+function openDrawer() {
+  $('side').inert = false;
+  $('side').classList.add('open');
+  $('scrim').hidden = false;
+  $('menu').setAttribute('aria-expanded', 'true');
+  $('cwd').focus();
+}
+// Closing from the scrim, the close button or Escape puts focus back on the menu button (a mouse click on the scrim
+// has already moved focus to <body>, so do not depend on where it was). Choosing a session or New chat passes
+// focusMenu: false because the input takes focus instead.
+function closeDrawer({ focusMenu = true } = {}) {
+  if (!drawerOpen()) return; // nothing to close: do not steal focus from whatever the user just used
+  $('side').classList.remove('open');
+  $('side').inert = true;
+  $('scrim').hidden = true;
+  $('menu').setAttribute('aria-expanded', 'false');
+  if (focusMenu === true) $('menu').focus();
+}
+const drawerOpen = () => $('side').classList.contains('open');
+
+// Working-folder button label: the folder's own name, full path on hover.
+function updateFolderBtn() {
+  const path = currentFolder(state, $('cwd').value);
+  $('folderBtn').textContent = basename(path) || 'Choose folder';
+  $('folderBtn').title = path;
+}
 
 // ── wiring ──
 $('cwdForm').addEventListener('submit', (e) => { e.preventDefault(); newChat(); });
-$('cwd').addEventListener('change', refreshSessions);
+$('cwd').addEventListener('change', () => { updateFolderBtn(); refreshSessions(); });
 $('composer').addEventListener('submit', (e) => { e.preventDefault(); submitComposer(); });
 $('attach').addEventListener('click', () => $('file').click());
 $('file').addEventListener('change', () => { addFiles($('file').files); $('file').value = ''; });
@@ -363,11 +451,23 @@ window.addEventListener('drop', (e) => {
   addFiles(e.dataTransfer.files);
 });
 $('input').addEventListener('input', autosize);
+// Typing "/" before any chat exists: start one now so the CLI can tell us its commands (no API call is made).
+$('input').addEventListener('input', () => {
+  if ($('input').value.startsWith('/') && !state.alive && !state.starting && $('cwd').value.trim()) {
+    state.starting = startChat(state.sessionId ?? undefined).catch(() => {}).finally(() => { state.starting = null; });
+  }
+});
+const slash = attachSlashMenu({ input: $('input'), menu: $('slashMenu'), getCommands: () => state.commands }); // before the Enter handler below
 $('input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('composer').requestSubmit(); }
 });
 $('stop').addEventListener('click', async () => { await api('/api/interrupt', {}).catch(() => {}); addNote('Stopped. Claude may not remember the interrupted message.'); });
-$('menu').addEventListener('click', () => $('side').classList.toggle('open'));
+$('menu').addEventListener('click', () => (drawerOpen() ? closeDrawer() : openDrawer()));
+$('scrim').addEventListener('click', closeDrawer);
+$('closeSide').addEventListener('click', closeDrawer);
+$('folderBtn').addEventListener('click', browse);
+$('browseBtn').addEventListener('click', browse);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && drawerOpen() && !document.querySelector('dialog[open]')) closeDrawer(); });
 $('mode').addEventListener('change', () => {
   const next = $('mode').value;
   if (next === 'bypassPermissions') {
@@ -383,4 +483,5 @@ function applyMode(mode) { state.mode = mode; state.alive = false; } // next sen
 connectEvents();
 await loadThemes();
 await loadRecents();
+updateFolderBtn();
 await refreshSessions();
