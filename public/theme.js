@@ -156,6 +156,12 @@ function artNode(t) {
     el.style.setProperty('--density', p.density.toFixed(3));
     el.style.setProperty('--phase', p.phase.toFixed(3));
   }
+  if (t.media?.hero) {
+    const hero = document.createElement('img');
+    hero.className = 'hero'; hero.src = t.media.hero; hero.alt = '';
+    el.append(hero);
+    return el;
+  }
   const mark = document.createElement('span');
   mark.className = 'mark';
   mark.setAttribute('aria-hidden', 'true');
@@ -199,6 +205,9 @@ export async function loadThemes() {
   let themes;
   try { themes = await (await fetch('/api/themes')).json(); } catch { return; }
   if (!Array.isArray(themes) || !themes.length) return;
+
+  const bar = document.getElementById('bar');
+  if (bar && window.ResizeObserver) new ResizeObserver(() => root().style.setProperty('--bar-h', `${bar.offsetHeight}px`)).observe(bar);
 
   try { artMap = styleFor(themes); } catch { artMap = null; } // styling the backgrounds must never stop the app from loading
 

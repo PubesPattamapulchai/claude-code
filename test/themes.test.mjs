@@ -49,14 +49,15 @@ test('listThemes finds media by slot name and falls back to the global user avat
   const dir = await mkdtemp(join(tmpdir(), 'lui-th-'));
   await mkdir(join(dir, 'a'));
   await writeFile(join(dir, 'a', 'theme.json'), JSON.stringify({ key: 'a', label: 'A', icon: '🅰', accent: '#111111', secondary: '#222222', hero: 'A', villain: false, group: 'Class 1-A' }));
-  for (const f of ['bg.mp4', 'claude.gif', 'notes.txt']) await writeFile(join(dir, 'a', f), 'x');
+  for (const f of ['bg.mp4', 'claude.gif', 'hero.webp', 'notes.txt']) await writeFile(join(dir, 'a', f), 'x');
   await writeFile(join(dir, '_user.png'), 'x');
   const [t] = await listThemes(dir);
   assert.equal(t.media.bg, '/themes/a/bg.mp4');
   assert.equal(t.media.claude, '/themes/a/claude.gif');
   assert.equal(t.media.user, '/themes/_user.png');
+  assert.equal(t.media.hero, '/themes/a/hero.webp');
   assert.equal(t.media.thinking, undefined);
-  assert.deepEqual(SLOTS, ['bg', 'claude', 'thinking', 'done', 'error', 'user']);
+  assert.deepEqual(SLOTS, ['bg', 'hero', 'claude', 'thinking', 'done', 'error', 'user']);
 });
 
 test('listThemes skips a theme with malformed json and orders by group then label', async () => {

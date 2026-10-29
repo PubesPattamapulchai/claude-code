@@ -27,13 +27,14 @@ There is no theme picker: the character changes by itself every minute, through 
 | File | Where it shows |
 |---|---|
 | `bg.mp4` / `bg.webm` / `bg.gif` / `bg.png` / `bg.jpg` / `bg.webp` | Full-page background, dimmed so text stays readable |
+| `hero.*` | Large transparent character drawn over the generated background (ignored when you supply `bg.*`) |
 | `claude.*` | The character's avatar next to Claude's messages |
 | `thinking.*` | Avatar while Claude is working |
 | `done.*` | Pops up when a reply finishes |
 | `error.*` | Pops up on errors |
 | `user.*` | Your avatar for this theme |
 
-`themes/_user.png` (any supported extension) is your avatar for every theme that has no `user.*` of its own. A theme with no `bg.*` gets a generated animated background instead: one of six manga-style patterns (speed lines, halftone burst, stripes, comic grid, sunburst, checkers) drawn from the theme's two colours, with the character's emoji as a faint watermark. It is drawn by the page itself, so there is nothing to download, and your own `bg.*` always wins. Avatars fall back to the character's emoji. Media files are git-ignored: bring your own.
+`themes/_user.png` (any supported extension) is your avatar for every theme that has no `user.*` of its own. A theme with no `bg.*` gets a generated animated background instead: one of six manga-style patterns (speed lines, halftone burst, stripes, comic grid, sunburst, checkers) drawn from the theme's two colours, with the character's `hero.*` image (or, without one, the emoji as a faint watermark). It is drawn by the page itself, so there is nothing to download, and your own `bg.*` always wins. Avatars fall back to the character's emoji. Media files are git-ignored: bring your own.
 
 To regenerate the theme files from `mha-statusline`:
 
