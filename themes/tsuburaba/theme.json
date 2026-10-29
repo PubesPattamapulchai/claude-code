@@ -1,0 +1,10 @@
+{
+  "key": "tsuburaba",
+  "label": "Tsuburaba (Kosei)",
+  "icon": "🫧",
+  "accent": "#d7ffff",
+  "secondary": "#afffff",
+  "hero": "Tsuburaba",
+  "villain": false,
+  "group": "Class 1-B"
+}

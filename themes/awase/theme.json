@@ -1,0 +1,10 @@
+{
+  "key": "awase",
+  "label": "Awase (Yosetsu)",
+  "icon": "🔧",
+  "accent": "#ffaf00",
+  "secondary": "#ffd700",
+  "hero": "Welder",
+  "villain": false,
+  "group": "Class 1-B"
+}

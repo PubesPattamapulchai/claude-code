@@ -1,0 +1,10 @@
+{
+  "key": "spinner",
+  "label": "Spinner (Iguchi Shuichi)",
+  "icon": "🦎",
+  "accent": "#870000",
+  "secondary": "#005f00",
+  "hero": "Spinner",
+  "villain": true,
+  "group": "Villains"
+}

@@ -1,0 +1,10 @@
+{
+  "key": "redestro",
+  "label": "Re-Destro (Yotsubashi Rikiya)",
+  "icon": "💰",
+  "accent": "#870000",
+  "secondary": "#af5f00",
+  "hero": "Re-Destro",
+  "villain": true,
+  "group": "Villains"
+}

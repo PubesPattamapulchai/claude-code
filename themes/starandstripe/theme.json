@@ -1,0 +1,10 @@
+{
+  "key": "starandstripe",
+  "label": "Star and Stripe (Bate Cathleen)",
+  "icon": "🇺🇸",
+  "accent": "#ff0000",
+  "secondary": "#0000ff",
+  "hero": "Star and Stripe",
+  "villain": false,
+  "group": "Pro Heroes"
+}

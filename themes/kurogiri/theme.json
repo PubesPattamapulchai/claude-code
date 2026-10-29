@@ -1,0 +1,10 @@
+{
+  "key": "kurogiri",
+  "label": "Shirakumo (Oboro)",
+  "icon": "🌀",
+  "accent": "#875f87",
+  "secondary": "#5f5f5f",
+  "hero": "Kurogiri",
+  "villain": true,
+  "group": "Villains"
+}

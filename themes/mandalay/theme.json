@@ -1,0 +1,10 @@
+{
+  "key": "mandalay",
+  "label": "Sosaki (Shino)",
+  "icon": "🐆",
+  "accent": "#d78700",
+  "secondary": "#875f00",
+  "hero": "Mandalay",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

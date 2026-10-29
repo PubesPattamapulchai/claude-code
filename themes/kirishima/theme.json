@@ -1,0 +1,10 @@
+{
+  "key": "kirishima",
+  "label": "Kirishima (Eijiro)",
+  "icon": "🪨",
+  "accent": "#ff5f00",
+  "secondary": "#ff8700",
+  "hero": "Red Riot",
+  "villain": false,
+  "group": "Class 1-A"
+}

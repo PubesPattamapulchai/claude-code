@@ -1,0 +1,10 @@
+{
+  "key": "geten",
+  "label": "Geten",
+  "icon": "🧊",
+  "accent": "#afffff",
+  "secondary": "#d7ffff",
+  "hero": "Geten",
+  "villain": true,
+  "group": "Villains"
+}

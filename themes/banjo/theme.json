@@ -1,0 +1,10 @@
+{
+  "key": "banjo",
+  "label": "Banjo (Daigoro)",
+  "icon": "〰️",
+  "accent": "#5f00af",
+  "secondary": "#af00ff",
+  "hero": "Banjo",
+  "villain": false,
+  "group": "One For All"
+}

@@ -1,0 +1,10 @@
+{
+  "key": "ectoplasm",
+  "label": "Ectoplasm",
+  "icon": "👥",
+  "accent": "#5fd7af",
+  "secondary": "#00d7af",
+  "hero": "Ectoplasm",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

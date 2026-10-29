@@ -1,0 +1,2 @@
+{"type":"user","cwd":"D:\\proj\\a","message":{"role":"user","content":[{"type":"text","text":"second chat"}]}}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"ok"}]}}

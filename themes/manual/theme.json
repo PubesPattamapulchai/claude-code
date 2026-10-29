@@ -1,0 +1,10 @@
+{
+  "key": "manual",
+  "label": "Manual (Mizushima Masaki)",
+  "icon": "💧",
+  "accent": "#00afff",
+  "secondary": "#5fafff",
+  "hero": "Manual",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

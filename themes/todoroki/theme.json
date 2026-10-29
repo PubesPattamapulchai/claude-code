@@ -1,0 +1,10 @@
+{
+  "key": "todoroki",
+  "label": "Todoroki (Shoto)",
+  "icon": "❄️",
+  "accent": "#00d7ff",
+  "secondary": "#00afff",
+  "hero": "Shoto",
+  "villain": false,
+  "group": "Class 1-A"
+}

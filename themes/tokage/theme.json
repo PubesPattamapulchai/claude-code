@@ -1,0 +1,10 @@
+{
+  "key": "tokage",
+  "label": "Tokage (Setsuna)",
+  "icon": "🦎",
+  "accent": "#87ff00",
+  "secondary": "#afff00",
+  "hero": "Lizardy",
+  "villain": false,
+  "group": "Class 1-B"
+}

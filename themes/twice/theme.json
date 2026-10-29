@@ -1,0 +1,10 @@
+{
+  "key": "twice",
+  "label": "Twice (Bubaigawara Jin)",
+  "icon": "🎭",
+  "accent": "#00ffff",
+  "secondary": "#d7ffff",
+  "hero": "Twice",
+  "villain": true,
+  "group": "Villains"
+}

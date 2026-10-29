@@ -1,0 +1,10 @@
+{
+  "key": "tiger",
+  "label": "Chatora (Yawara)",
+  "icon": "🐯",
+  "accent": "#d75f00",
+  "secondary": "#d7af00",
+  "hero": "Tiger",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

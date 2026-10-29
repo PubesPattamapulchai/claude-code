@@ -1,0 +1,10 @@
+{
+  "key": "mirio",
+  "label": "Togata (Mirio)",
+  "icon": "👻",
+  "accent": "#ffd700",
+  "secondary": "#ffff00",
+  "hero": "Lemillion",
+  "villain": false,
+  "group": "Big 3"
+}

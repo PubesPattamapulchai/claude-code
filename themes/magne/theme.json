@@ -1,0 +1,10 @@
+{
+  "key": "magne",
+  "label": "Hikiishi (Kenji)",
+  "icon": "🧲",
+  "accent": "#870087",
+  "secondary": "#af00af",
+  "hero": "Magne",
+  "villain": true,
+  "group": "Villains"
+}

@@ -1,0 +1,10 @@
+{
+  "key": "allforone",
+  "label": "Shigaraki (Zen)",
+  "icon": "👑",
+  "accent": "#5f0087",
+  "secondary": "#303030",
+  "hero": "All For One",
+  "villain": true,
+  "group": "Villains"
+}

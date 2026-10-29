@@ -1,0 +1,10 @@
+{
+  "key": "allmight",
+  "label": "All Might (Yagi Toshinori)",
+  "icon": "💪",
+  "accent": "#0087ff",
+  "secondary": "#0087ff",
+  "hero": "All Might",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

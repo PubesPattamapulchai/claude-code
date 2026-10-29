@@ -1,0 +1,10 @@
+{
+  "key": "mineta",
+  "label": "Mineta (Minoru)",
+  "icon": "🟣",
+  "accent": "#af00ff",
+  "secondary": "#8700ff",
+  "hero": "Grape Juice",
+  "villain": false,
+  "group": "Class 1-A"
+}

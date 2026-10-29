@@ -1,0 +1,10 @@
+{
+  "key": "kaibara",
+  "label": "Kaibara (Sen)",
+  "icon": "🌪️",
+  "accent": "#d78700",
+  "secondary": "#ff8700",
+  "hero": "Spiral",
+  "villain": false,
+  "group": "Class 1-B"
+}

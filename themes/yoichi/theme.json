@@ -1,0 +1,10 @@
+{
+  "key": "yoichi",
+  "label": "Shigaraki (Yoichi)",
+  "icon": "🕊️",
+  "accent": "#ffd7af",
+  "secondary": "#ffffd7",
+  "hero": "Yoichi",
+  "villain": false,
+  "group": "One For All"
+}

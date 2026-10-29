@@ -1,0 +1,10 @@
+{
+  "key": "recoverygirl",
+  "label": "Recovery Girl (Shuzenji Chiyo)",
+  "icon": "💊",
+  "accent": "#ffafaf",
+  "secondary": "#ffd7d7",
+  "hero": "Recovery Girl",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

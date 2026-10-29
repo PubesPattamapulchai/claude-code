@@ -1,0 +1,10 @@
+{
+  "key": "en",
+  "label": "Tayutai (En)",
+  "icon": "💨",
+  "accent": "#875f87",
+  "secondary": "#af87d7",
+  "hero": "En",
+  "villain": false,
+  "group": "One For All"
+}

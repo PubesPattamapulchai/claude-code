@@ -1,0 +1,10 @@
+{
+  "key": "tamaki",
+  "label": "Amajiki (Tamaki)",
+  "icon": "🍽️",
+  "accent": "#875faf",
+  "secondary": "#5f5f87",
+  "hero": "Suneater",
+  "villain": false,
+  "group": "Big 3"
+}

@@ -1,0 +1,10 @@
+{
+  "key": "hounddog",
+  "label": "Hound Dog (Inui Ryo)",
+  "icon": "🐕",
+  "accent": "#af5f00",
+  "secondary": "#d78700",
+  "hero": "Hound Dog",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

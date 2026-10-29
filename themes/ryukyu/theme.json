@@ -1,0 +1,10 @@
+{
+  "key": "ryukyu",
+  "label": "Ryukyu (Tatsuma Ryuko)",
+  "icon": "🐲",
+  "accent": "#005faf",
+  "secondary": "#00ffff",
+  "hero": "Ryukyu",
+  "villain": false,
+  "group": "Pro Heroes"
+}
