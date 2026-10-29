@@ -22,13 +22,13 @@ test('ansiToHex converts xterm-256 and SGR colours', () => {
 
 test('parseThemes reads fields, groups and villain flag from the sample', () => {
   const t = parseThemes(readFileSync(SAMPLE, 'utf8'));
-  assert.equal(t.length, 6);
+  assert.equal(t.length, 5);
   assert.deepEqual(by(t, 'deku'), { key: 'deku', label: 'Deku (Midoriya Izuku)', icon: '✊', accent: '#00ff00', secondary: '#00ffff', hero: 'Deku', villain: false, group: 'Class 1-A' });
   assert.equal(by(t, 'dabi').villain, true);
   assert.equal(by(t, 'dabi').group, 'Villains');
   assert.equal(by(t, 'aizawa').group, 'U.A. Faculty');
   assert.equal(by(t, 'shinzo').group, 'Class 1-A');
-  assert.equal(by(t, 'monoma').group, 'Class 1-B');
+  assert.equal(by(t, 'monoma'), undefined, 'Class 1-B must not be generated');
   assert.equal(by(t, 'mirio').group, 'Big 3');
 });
 
@@ -39,7 +39,8 @@ test('parseThemes unescapes doubled single quotes in names', () => {
 
 test('writeThemes writes one theme.json per key', async () => {
   const out = await mkdtemp(join(tmpdir(), 'lui-th-'));
-  assert.equal(await writeThemes(SAMPLE, out), 6);
+  assert.equal(await writeThemes(SAMPLE, out), 5);
+  await assert.rejects(readFile(join(out, 'monoma', 'theme.json')), { code: 'ENOENT' });
   const j = JSON.parse(await readFile(join(out, 'dabi', 'theme.json'), 'utf8'));
   assert.deepEqual(Object.keys(j).sort(), ['accent', 'group', 'hero', 'icon', 'key', 'label', 'secondary', 'villain']);
 });
@@ -64,6 +65,7 @@ test('listThemes skips a theme with malformed json and orders by group then labe
   await mk('z', { group: 'Villains', villain: true });
   await mk('b', {});
   await mk('a', {});
+  await mk('monoma', { group: 'Class 1-B' });
   await mkdir(join(dir, 'bad'));
   await writeFile(join(dir, 'bad', 'theme.json'), '{nope');
   assert.deepEqual((await listThemes(dir)).map((t) => t.key), ['a', 'b', 'z']);

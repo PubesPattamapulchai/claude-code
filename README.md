@@ -1,6 +1,6 @@
 # Plus Ultra Terminal
 
-A local web app that wraps the installed `claude` CLI. Paste screenshots, drop files, and watch the app skin itself as each of 108 My Hero Academia characters in turn, with your own gifs, images and videos if you add them.
+A local web app that wraps the installed `claude` CLI. Paste screenshots, drop files, and watch the app skin itself as each of 62 My Hero Academia characters in turn, with your own gifs, images and videos if you add them.
 
 Everything runs on your machine. It uses the Claude Code login you already have.
 
@@ -22,7 +22,7 @@ Not logged in? Run `claude` once in a terminal and log in, then retry.
 
 ## Themes and your own media
 
-There is no theme picker: the character changes by itself every minute, through all 108 in a shuffled order that never repeats inside a lap (one lap is 108 minutes). Every tab shows the same character and a reload keeps your place. To restart the rotation, delete the `rotateStart` entry from the page's local storage. Each theme is `themes/<key>/theme.json` (colours, icon, hero name). Media is optional and found by file name. Drop files in `themes/<key>/`:
+There is no theme picker: the character changes by itself every minute, through all 62 in a shuffled order that never repeats inside a lap (one lap is 62 minutes). Class 1-B is excluded. Every tab shows the same character and a reload keeps your place. To restart the rotation, delete the `rotateStart` entry from the page's local storage. Each theme is `themes/<key>/theme.json` (colours, icon, hero name). Media is optional and found by file name. Drop files in `themes/<key>/`:
 
 | File | Where it shows |
 |---|---|

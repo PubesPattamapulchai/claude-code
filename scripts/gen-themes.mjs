@@ -48,7 +48,7 @@ export function parseThemes(src) {
       cur[m[1] === 'Quirk' ? 'accent' : 'secondary'] = ansiToHex(m[2] === 'Ansi256' ? '256' : 'sgr', Number(m[3]));
     } else if (/^\s*Villain\s*=\s*\$true/.test(line)) cur.villain = true;
   }
-  return themes;
+  return themes.filter((t) => t.group !== 'Class 1-B');
 }
 
 function finish(t) {

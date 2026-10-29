@@ -1,0 +1,170 @@
+{
+  "tool": "built-in image_gen__imagegen",
+  "generationAttempts": 12,
+  "referencePages": [
+    {
+      "key": "deku",
+      "url": "https://heroaca.com/character/chara_group01/01-01/"
+    },
+    {
+      "key": "bakugo",
+      "url": "https://heroaca.com/character/chara_group01/01-02/"
+    },
+    {
+      "key": "todoroki",
+      "url": "https://heroaca.com/character/chara_group01/01-05/"
+    },
+    {
+      "key": "hagakure",
+      "url": "https://heroaca.com/character/chara_group01/01-18/"
+    },
+    {
+      "key": "tokoyami",
+      "url": "https://heroaca.com/character/chara_group01/01-10/"
+    },
+    {
+      "key": "shigaraki",
+      "url": "https://heroaca.com/character/chara_group06/06-01/"
+    }
+  ],
+  "installedFiles": [
+    {
+      "key": "deku",
+      "background": "themes/deku/bg.webp",
+      "sharedPortraitSlots": [
+        "themes/deku/claude.png",
+        "themes/deku/thinking.png",
+        "themes/deku/done.png",
+        "themes/deku/error.png"
+      ]
+    },
+    {
+      "key": "bakugo",
+      "background": "themes/bakugo/bg.webp",
+      "sharedPortraitSlots": [
+        "themes/bakugo/claude.png",
+        "themes/bakugo/thinking.png",
+        "themes/bakugo/done.png",
+        "themes/bakugo/error.png"
+      ]
+    },
+    {
+      "key": "todoroki",
+      "background": "themes/todoroki/bg.webp",
+      "sharedPortraitSlots": [
+        "themes/todoroki/claude.png",
+        "themes/todoroki/thinking.png",
+        "themes/todoroki/done.png",
+        "themes/todoroki/error.png"
+      ]
+    },
+    {
+      "key": "hagakure",
+      "background": "themes/hagakure/bg.webp",
+      "sharedPortraitSlots": [
+        "themes/hagakure/claude.png",
+        "themes/hagakure/thinking.png",
+        "themes/hagakure/done.png",
+        "themes/hagakure/error.png"
+      ]
+    },
+    {
+      "key": "tokoyami",
+      "background": "themes/tokoyami/bg.webp",
+      "sharedPortraitSlots": [
+        "themes/tokoyami/claude.png",
+        "themes/tokoyami/thinking.png",
+        "themes/tokoyami/done.png",
+        "themes/tokoyami/error.png"
+      ]
+    },
+    {
+      "key": "shigaraki",
+      "background": "themes/shigaraki/bg.webp",
+      "sharedPortraitSlots": [
+        "themes/shigaraki/claude.png",
+        "themes/shigaraki/thinking.png",
+        "themes/shigaraki/done.png",
+        "themes/shigaraki/error.png"
+      ]
+    }
+  ],
+  "postprocessing": {
+    "background": "Resize/crop to 1280x720 and encode still WebP, quality 88.",
+    "portrait": "Preserve alpha; fit into 320x320 then centre on a transparent 384x384 canvas for circular-crop margins. Copy identical PNG into all four portrait slots."
+  },
+  "prompts": [
+    {
+      "attempt": 1,
+      "key": "deku",
+      "slot": "bg",
+      "prompt": "Use case: illustration-story. Production asset for a personal anime-themed chat app. Polished colour anime illustration, crisp expressive linework, restrained cel shading and subtle painterly atmosphere; consistent cohesive series. Faithful character design from My Hero Academia, original pose and composition. No added text, lettering, logos, watermark, border, collage, panel divisions or interface elements.\nAsset type: desktop chat background, wide 16:9 landscape, preferably 1920x1080, at least 1280x720, opaque.\nSubject: Izuku Midoriya / Deku: youthful determined face, freckles on both cheeks, large green eyes, messy dark green hair with black shading. Classic green hero suit, white/silver neck respirator resting below his face, black details, red utility belt. Keep face uncovered. Green/cyan One For All sparks restrained around his arm.\nComposition: ONLY ONE Deku, medium-long or waist-up action portrait at the far right quarter, fully inside the frame with head margin. His face and upper body are on the right, no close-up giant face. The middle 55% and left half are dark, calm and low-detail negative space for existing chat UI; bottom region subdued. Background: a quiet rooftop overlooking an out-of-focus city at blue hour, deep ink-navy shadows, a few green/cyan lights (#00ff00 and #00ffff) toward edges. Heroic but calm, controlled small energy arcs near his right-side position. Keep bright effects and focal detail out of the central chat column. This is artwork only; do not draw the chat UI."
+    },
+    {
+      "attempt": 2,
+      "key": "deku",
+      "slot": "portrait",
+      "prompt": "Use case: illustration-story. Production asset for a personal anime-themed chat app. Polished colour anime illustration, crisp expressive linework, restrained cel shading and subtle painterly atmosphere; consistent cohesive series. Faithful character design from My Hero Academia, original pose and composition. No added text, lettering, logos, watermark, border, collage, panel divisions or interface elements.\nAsset type: ONE square avatar / character sticker, 1024x1024 preferred, true transparent alpha background. This same image will appear in a circular crop at 40 pixels and as a 260-pixel popup.\nSubject: Izuku Midoriya / Deku: youthful determined face, freckles on both cheeks, large green eyes, messy dark green hair with black shading. Classic green hero suit, white/silver neck respirator resting below his face, black details, red utility belt. Keep face uncovered. Green/cyan One For All sparks restrained around his arm.\nComposition: centred isolated head-and-shoulders portrait of Deku, front three-quarter view, looking toward the viewer with a quietly confident friendly determined expression. No body below upper chest, no hands. Clearly visible freckles, green eyes and green hair. Classic green hero collar and silver respirator resting below face. Head occupies about 60% of square width, with generous 15% clear margin from the outer edges and above hair to preserve a circular crop. All identifying facial features in the central half. A thin cyan rim light is okay, no surrounding energy effects. True transparent background, not a checkerboard drawn into the artwork, not white or black background. Bold readable silhouette, clean non-fringed alpha edges."
+    },
+    {
+      "attempt": 3,
+      "key": "bakugo",
+      "slot": "bg",
+      "prompt": "Use case: illustration-story. Production asset for a personal anime-themed chat app. Polished colour anime illustration, crisp expressive linework, restrained cel shading and subtle painterly atmosphere; consistent cohesive series. Faithful character design from My Hero Academia, original pose and composition. No added text, lettering, logos, watermark, border, collage, panel divisions or interface elements.\nAsset type: desktop chat background, wide 16:9 landscape, preferably 1920x1080, at least 1280x720, opaque.\nSubject: Katsuki Bakugo / Dynamight: ash-blond sharply spiky hair, red eyes, recognisable black angular eye mask, determined sharp face. Classic black sleeveless hero suit with orange X harness, orange-and-black explosive headgear, dark green grenade-shaped forearm gauntlets. Orange explosions restrained toward the edge.\nComposition: ONLY ONE Bakugo, waist-up on the far right quarter, sharp profile facing a little toward the centre, head entirely inside the frame. A dark rooftop/industrial city at dusk with deep charcoal and navy shadows. One grenade gauntlet near the lower-right corner, tiny restrained orange embers and a compact blast at the outer right edge only. Theme accents #ff8700 and #ffaf00. Central 55% and left half are calm dark low-detail negative space for chat, bottom subdued, bright orange detail concentrated at the right/top edges. Original heroic composition; do not draw any UI."
+    },
+    {
+      "attempt": 4,
+      "key": "bakugo",
+      "slot": "portrait",
+      "prompt": "Use case: illustration-story. Production asset for a personal anime-themed chat app. Polished colour anime illustration, crisp expressive linework, restrained cel shading and subtle painterly atmosphere; consistent cohesive series. Faithful character design from My Hero Academia, original pose and composition. No added text, lettering, logos, watermark, border, collage, panel divisions or interface elements.\nAsset type: ONE square character avatar / sticker, true transparent alpha background, 1024x1024 preferred.\nSubject: Katsuki Bakugo / Dynamight: ash-blond sharply spiky hair, red eyes, recognisable black angular eye mask, determined sharp face. Classic black sleeveless hero suit with orange X harness, orange-and-black explosive headgear, dark green grenade-shaped forearm gauntlets. Orange explosions restrained toward the edge.\nComposition: isolated centred head-and-shoulders portrait, front three-quarter view, red eyes looking toward viewer, confident determined half-smile. Keep his signature black angular eye mask, ash-blond spikes and black/orange explosive headgear, orange X costume visible at shoulders. No gauntlets or extra hands in portrait, no explosions. Clear bold silhouette and large readable eyes for a 40px circle. Head within the central 65% of square, generous transparent margins on every side including above headgear. Shoulder tips within frame. Consistent anime design with the background character. Genuine transparent alpha, not a drawn checkerboard, no solid backdrop or circular badge."
+    },
+    {
+      "attempt": 5,
+      "key": "todoroki",
+      "slot": "bg",
+      "prompt": "Use case: illustration-story. Production asset for a personal anime-themed chat app. Polished colour anime illustration, crisp expressive linework, restrained cel shading and subtle painterly atmosphere; consistent cohesive series. Faithful character design from My Hero Academia, original pose and composition. No added text, lettering, logos, watermark, border, collage, panel divisions or interface elements.\nAsset type: desktop chat background, wide 16:9 landscape, preferably 1920x1080, at least 1280x720, opaque.\nSubject: Shoto Todoroki: straight split-colour hair, white on his right (viewer left), red on his left (viewer right); grey right eye and turquoise left eye; red burn scar around his left eye (viewer right). Classic dark navy blue high-collared hero suit and silver utility belt. Ice from his right side and restrained fire from his left.\nComposition: ONLY ONE Shoto, waist-up at the far right quarter, looking calmly toward the centre, face completely in frame. His white hair is on viewer left and red hair plus scar on viewer right. Scene: quiet frost-covered urban training plaza at night, deep navy, a little cold mist and cyan-blue ice toward the outer right edge, very restrained warm orange fire at his left hand, character's physical left is viewer right. Theme accents #00d7ff and #00afff. Middle 55% and left half calm, dark, low-detail negative space for chat. No huge bright ice wall in centre, subdued bottom, no other characters. Original cinematic anime scene; do not draw UI."
+    },
+    {
+      "attempt": 6,
+      "key": "todoroki",
+      "slot": "portrait",
+      "prompt": "Use case: illustration-story. Production asset for a personal anime-themed chat app. Polished colour anime illustration, crisp expressive linework, restrained cel shading and subtle painterly atmosphere; consistent cohesive series. Faithful character design from My Hero Academia, original pose and composition. No added text, lettering, logos, watermark, border, collage, panel divisions or interface elements.\nAsset type: ONE square character avatar / sticker, true transparent alpha background, 1024x1024 preferred.\nSubject: Shoto Todoroki: straight split-colour hair, white on his right (viewer left), red on his left (viewer right); grey right eye and turquoise left eye; red burn scar around his left eye (viewer right). Classic dark navy blue high-collared hero suit and silver utility belt. Ice from his right side and restrained fire from his left.\nComposition: isolated centred head-and-shoulders portrait, nearly straight-on front view, calm composed expression, facing viewer. Hair WHITE on viewer LEFT, RED on viewer RIGHT. Grey eye viewer LEFT, turquoise eye with the distinctive red burn scar viewer RIGHT. Dark navy high collar with silver details. No flames, ice, hands or scenery in this portrait. Head in central 65% of square with generous transparent margin on all edges, readable eyes and clear split-colour silhouette at 40px. Genuine transparent alpha, no opaque background, no drawn checkerboard, no circular badge."
+    },
+    {
+      "attempt": 7,
+      "key": "hagakure",
+      "slot": "bg",
+      "prompt": "Use case: illustration-story. Production asset for a personal anime-themed chat app. Polished colour anime illustration, crisp expressive linework, restrained cel shading and subtle painterly atmosphere; consistent cohesive series. Faithful character design from My Hero Academia, original pose and composition. No added text, lettering, logos, watermark, border, collage, panel divisions or interface elements.\nAsset type: desktop chat background, wide 16:9 landscape, preferably 1920x1080, at least 1280x720, opaque.\nSubject: Toru Hagakure / Invisible Girl in her canonical invisible hero form: no visible skin, head, eyes, hair or face and no invented humanoid outline. Identify her through her pair of white hero gloves with pale cuffs, posed as expressive floating hands; for a wide scene also include her white/pale pink hero boots. Tasteful cyan-white prismatic light refraction, fully invisible clothed/abstract subject, no visible anatomy or nudity.\nComposition: ONLY ONE Invisible Girl represented on the far right by exactly two cheerful white hero gloves floating where hands would be, one raised in a small friendly wave, and two pale pink-white hero boots standing on the rooftop. No visible head or body at all; do not draw a translucent girl's face, skin, human outline, ghost, mannequin or extra person. The absence of a visible body is intentional and essential. Very subtle pale cyan prismatic refraction around her floating accessories at the right; no invented face. Scene: peaceful moonlit school training rooftop, deep blue-grey and teal shadows, a few gentle cyan-white reflections (#d7ffff and #afffff) at edges. Middle 55% and left half are dark low-detail negative space for chat; bottom subdued. Heroic light-refraction mood, do not draw UI."
+    },
+    {
+      "attempt": 8,
+      "key": "hagakure",
+      "slot": "portrait",
+      "prompt": "Use case: illustration-story. Production asset for a personal anime-themed chat app. Polished colour anime illustration, crisp expressive linework, restrained cel shading and subtle painterly atmosphere; consistent cohesive series. Faithful character design from My Hero Academia, original pose and composition. No added text, lettering, logos, watermark, border, collage, panel divisions or interface elements.\nAsset type: ONE square transparent character avatar / sticker representing Toru Hagakure / Invisible Girl in her canonical invisible hero form.\nPrimary request: exactly TWO expressive white hero gloves with pale pinkish cuffs, floating in the central area of the square, as if an invisible girl's hands are raised beside her invisible face. One glove gives a friendly open-palmed wave, the second is a small relaxed closed fist slightly below. No visible head, hair, eyes, skin, face, torso, human outline, mannequin, ghost or written symbol. No boots in this avatar. The gloves themselves are the recognisable character representation, not a generic emoji. A very subtle pale-cyan prismatic shimmer may connect their gesture without outlining any body. Hand-drawn colour anime linework and cel shading, consistent with the rooftop background. Strong clean silhouette that remains visible on dark surfaces in a circular 40px avatar. Group both gloves close enough to fit entirely inside the central 65% circle, generous transparent margins. Real transparent alpha background, no drawn checkerboard, no solid or circular backdrop."
+    },
+    {
+      "attempt": 9,
+      "key": "tokoyami",
+      "slot": "bg",
+      "prompt": "Use case: illustration-story. Production asset for a personal anime-themed chat app. Polished colour anime illustration, crisp expressive linework, restrained cel shading and subtle painterly atmosphere; consistent cohesive series. Faithful character design from My Hero Academia, original pose and composition. No added text, lettering, logos, watermark, border, collage, panel divisions or interface elements.\nAsset type: desktop chat background, wide 16:9 landscape, preferably 1920x1080, at least 1280x720, opaque.\nSubject: Fumikage Tokoyami / Tsukuyomi: recognisable black raven-like feathered head, angular yellow beak, small red eyes, red neck choker, dark black/purple cloak. He is a bird-headed human hero, not a generic raven or human with a bird mask. Restrained purple Dark Shadow energy curl; keep his actual head clearly identifiable.\nComposition: ONLY ONE Tokoyami waist-up at the far right quarter, bird head and yellow beak in frame, cloak draping to lower right. A single restrained curl of his own Dark Shadow power behind his shoulder, NOT a second human or multiple heads. Quiet gothic school rooftop at night, dark navy and ink black with dim violet accents (#5f0087 and #8700d7) near the outer right edge, faint distant city silhouettes. Heroic, serious and protective, not horror. Centre 55% and left half remain dark calm low-detail negative space for chat, bottom subdued. Face must be identifiable and separate from shadow. Do not draw UI."
+    },
+    {
+      "attempt": 10,
+      "key": "tokoyami",
+      "slot": "portrait",
+      "prompt": "Use case: illustration-story. Production asset for a personal anime-themed chat app. Polished colour anime illustration, crisp expressive linework, restrained cel shading and subtle painterly atmosphere; consistent cohesive series. Faithful character design from My Hero Academia, original pose and composition. No added text, lettering, logos, watermark, border, collage, panel divisions or interface elements.\nAsset type: ONE square character avatar / sticker, true transparent alpha background, 1024x1024 preferred.\nSubject: Fumikage Tokoyami / Tsukuyomi: recognisable black raven-like feathered head, angular yellow beak, small red eyes, red neck choker, dark black/purple cloak. He is a bird-headed human hero, not a generic raven or human with a bird mask. Restrained purple Dark Shadow energy curl; keep his actual head clearly identifiable.\nComposition: isolated centred head-and-shoulders portrait of Fumikage Tokoyami, front three-quarter angle looking toward viewer, black feathered bird HEAD attached to human shoulders, distinctive angular yellow beak, small red eyes, red choker and dark cloak. No human face or bird mask, no generic full raven, no detached feather icon. Keep red eye and beak sharply readable in a 40px circle, subtly violet rim-lit feathers separate from a dark UI. No Dark Shadow creature or energy surrounding the avatar. Head and beak inside central 65% square, generous clear margins including above feathers and beside beak, shoulder tips within frame. True transparent alpha, no drawn checkerboard, no solid background, no circular badge."
+    },
+    {
+      "attempt": 11,
+      "key": "shigaraki",
+      "slot": "bg",
+      "prompt": "Use case: illustration-story. Production asset for a personal anime-themed chat app. Polished colour anime illustration, crisp expressive linework, restrained cel shading and subtle painterly atmosphere; consistent cohesive series. Faithful character design from My Hero Academia, original pose and composition. No added text, lettering, logos, watermark, border, collage, panel divisions or interface elements.\nAsset type: desktop chat background, wide 16:9 landscape, preferably 1920x1080, at least 1280x720, opaque.\nSubject: Tomura Shigaraki in the early anime League of Villains design: messy pale blue-grey hair, pale face, red eyes, dark clothing, and the iconic pale detached mannequin-like hand prop covering his face with gaps showing a red eye. Non-graphic, no blood, wounds or exposed anatomy; the hand is an inert costume prop. Muted grey-violet decay dust and crumbling stone atmosphere, menacing but subtle.\nComposition: ONLY ONE Tomura Shigaraki, waist-up at the far right quarter, iconic pale costume hand covering the face, dishevelled pale blue-grey hair, one red eye visible between its fingers. Dark navy long-sleeved shirt, slender build. No red cape, no white-haired late-series transformation. This is a clean non-graphic anime villain portrait, no blood or wounds. Scene: deserted cracked urban rooftop at night, dim grey-violet (#5f5f87 and #8a8a8a) rim light around hair and fingertips, a little restrained decay dust at outer right edge, charcoal city fading in background. Menacing stillness. Middle 55% and left half calm dark low-detail negative space for chat, bottom subdued. Keep hand and hair recognisable, no extra human figures, no UI."
+    },
+    {
+      "attempt": 12,
+      "key": "shigaraki",
+      "slot": "portrait",
+      "prompt": "Use case: illustration-story. Production asset for a personal anime-themed chat app. Polished colour anime illustration, crisp expressive linework, restrained cel shading and subtle painterly atmosphere; consistent cohesive series. Faithful character design from My Hero Academia, original pose and composition. No added text, lettering, logos, watermark, border, collage, panel divisions or interface elements.\nAsset type: ONE square character avatar / sticker, true transparent alpha background, 1024x1024 preferred.\nSubject: Tomura Shigaraki in the early anime League of Villains design: messy pale blue-grey hair, pale face, red eyes, dark clothing, and the iconic pale detached mannequin-like hand prop covering his face with gaps showing a red eye. Non-graphic, no blood, wounds or exposed anatomy; the hand is an inert costume prop. Muted grey-violet decay dust and crumbling stone atmosphere, menacing but subtle.\nComposition: isolated centred head-and-shoulders portrait, facing viewer, messy pale blue-grey hair, iconic pale hand costume prop covering the face, its fingers spread enough for a small red eye to show clearly. Dark high-neck shirt and restrained violet rim light. Early anime design consistent with the grey ruined rooftop background, not late white-haired/red-cape form. The covering hand is an inert non-graphic costume prop, not an injured body part; absolutely no blood, wounds or gore. No extra arms or multiple hands around shoulders. Group head, prop and shoulders in central 65% of square with generous transparent margins. Clearly recognisable hair, hand and eye at 40px circular avatar size. True transparent alpha, no drawn checkerboard, no solid backdrop or circular badge."
+    }
+  ]
+}
