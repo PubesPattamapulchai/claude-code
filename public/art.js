@@ -11,7 +11,8 @@ const unit = (str) => hash(str) / 4294967296; // [0, 1)
 
 // Colours this close (RGB distance, about one xterm shade) look the same to a person.
 const SIMILAR = 48;
-const channel = (hex, i) => parseInt(hex.slice(1 + 2 * i, 3 + 2 * i), 16);
+const full = (hex) => (hex.length === 4 ? `#${[...hex.slice(1)].map((c) => c + c).join('')}` : hex); // #abc -> #aabbcc
+const channel = (hex, i) => parseInt(full(hex).slice(1 + 2 * i, 3 + 2 * i), 16);
 const dist = (a, b) => Math.hypot(...[0, 1, 2].map((i) => channel(a, i) - channel(b, i)));
 const near = (a, b) => dist(a, b) <= SIMILAR;
 const alike = (a, b) => (near(a.accent, b.accent) && near(a.secondary, b.secondary)) || (near(a.accent, b.secondary) && near(a.secondary, b.accent));

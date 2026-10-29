@@ -200,7 +200,7 @@ export async function loadThemes() {
   try { themes = await (await fetch('/api/themes')).json(); } catch { return; }
   if (!Array.isArray(themes) || !themes.length) return;
 
-  try { artMap = styleFor(themes); } catch { artMap = null; } // a colour group that outgrows the styles must not stop the app
+  try { artMap = styleFor(themes); } catch { artMap = null; } // styling the backgrounds must never stop the app from loading
 
   const raw = store.get('rotateStart');
   const start = resolveStart(raw, Date.now());

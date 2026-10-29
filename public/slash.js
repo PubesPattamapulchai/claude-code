@@ -49,7 +49,6 @@ export function attachSlashMenu({ input, menu, getCommands }) {
     active = -1;
     menu.hidden = true;
     menu.replaceChildren();
-    input.setAttribute('aria-expanded', 'false');
     input.removeAttribute('aria-activedescendant');
   }
 
@@ -73,7 +72,6 @@ export function attachSlashMenu({ input, menu, getCommands }) {
       return li;
     }));
     menu.hidden = !items.length;
-    input.setAttribute('aria-expanded', String(!menu.hidden));
     if (active >= 0) {
       input.setAttribute('aria-activedescendant', `slash-opt-${active}`);
       menu.children[active]?.scrollIntoView({ block: 'nearest' });
@@ -111,7 +109,9 @@ export function attachSlashMenu({ input, menu, getCommands }) {
       close();
     } else if ((e.key === 'Enter' && !e.shiftKey) || e.key === 'Tab') {
       // Enter on a command that is already typed in full means "run it": let the page send it.
-      if (e.key === 'Enter' && input.value === `/${items[active].name}`) { close(); return; }
+      const typed = input.value.trim().toLowerCase();
+      const full = [items[active].name, ...(items[active].aliases ?? [])].some((n) => typed === `/${n.toLowerCase()}`);
+      if (e.key === 'Enter' && full) { close(); return; }
       e.preventDefault();
       e.stopImmediatePropagation();
       pick(active);

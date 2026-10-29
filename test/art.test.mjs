@@ -72,3 +72,10 @@ test('a crowd of identical colours still gets a valid style for every theme, and
     assert.ok(warned >= 1, 'running out of distinct styles must be reported');
   } finally { console.warn = warn; }
 });
+
+test('three-digit hex colours are understood: identical ones never share a style', () => {
+  const six = Array.from({ length: 6 }, (_, i) => ({ key: `short${i}`, accent: '#fff', secondary: '#000' }));
+  const map = styleFor(six);
+  assert.equal(new Set([...map.values()].map((v) => v.style)).size, 6, 'six identical colour themes need six different styles');
+  assert.ok(Number.isFinite(map.get('short0').angle));
+});

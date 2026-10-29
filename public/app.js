@@ -152,7 +152,7 @@ function handle(e) {
       banner('Claude is not logged in. Run `claude` in a terminal, log in, then try again.');
       break;
     case 'error': setBusy(false); banner(e.message); flash('error'); break;
-    case 'exit': state.alive = false; setBusy(false); state.live = null; break;
+    case 'exit': state.alive = false; state.commands = []; setBusy(false); state.live = null; break;
   }
 }
 
@@ -384,6 +384,7 @@ async function chooseFolder(path) {
   $('cwd').value = path;
   localStorageSet('cwd', path);
   state.alive = false;
+  state.commands = []; // they belonged to the old folder's project
   clearConversation();
   // Images travel as base64, but a file was saved under the old folder, out of reach of Claude in the new one.
   state.attachments = state.attachments.filter((a) => a.kind === 'image');
@@ -413,6 +414,7 @@ function openDrawer() {
 // has already moved focus to <body>, so do not depend on where it was). Choosing a session or New chat passes
 // focusMenu: false because the input takes focus instead.
 function closeDrawer({ focusMenu = true } = {}) {
+  if (!drawerOpen()) return; // nothing to close: do not steal focus from whatever the user just used
   $('side').classList.remove('open');
   $('side').inert = true;
   $('scrim').hidden = true;

@@ -72,10 +72,12 @@ async function listing(path) {
 }
 
 // Shows the dialog. `start` may be '' (the server picks D:\ or the first drive).
+let here = ''; // the folder the dialog is showing ('' until a listing has arrived)
+const fetchDir = latestOnly(listing); // one guard for the whole dialog: a slow answer never overwrites a newer one, even from an earlier opening
+
 export async function openPicker({ start, recents, onSelect }) {
   const dlg = $('picker');
-  const fetchDir = latestOnly(listing); // a slow answer must never overwrite a newer one
-  let here = '';
+  here = '';
   const sepOf = (p) => (p.includes('/') && !p.includes('\\') ? '/' : '\\');
   const join = (dir, name) => `${dir}${dir.endsWith(sepOf(dir)) ? '' : sepOf(dir)}${name}`;
 
@@ -83,6 +85,7 @@ export async function openPicker({ start, recents, onSelect }) {
 
   function render(data) {
     here = data.path;
+    $('pickerSelect').disabled = false;
     $('pickerPath').textContent = data.path;
     showError('');
 
@@ -116,7 +119,10 @@ export async function openPicker({ start, recents, onSelect }) {
     try {
       const r = await fetchDir(path);
       if (!r.stale) render(r.value);
-    } catch (e) { showError(ERRORS[e.message] ?? 'Could not open that folder.'); }
+    } catch (e) {
+      showError(ERRORS[e.message] ?? 'Could not open that folder.');
+      if (!here) $('dirList').replaceChildren(); // nothing was ever shown: drop the "Loading…" line
+    }
   }
 
   const recentBox = $('recentBox');
@@ -132,9 +138,15 @@ export async function openPicker({ start, recents, onSelect }) {
 
   $('drives').onchange = () => go($('drives').value);
   $('pickerCancel').onclick = () => dlg.close();
-  $('pickerSelect').onclick = () => { const chosen = here; dlg.close(); if (chosen) onSelect(chosen); };
+  $('pickerSelect').onclick = () => { if (!here) return; const chosen = here; dlg.close(); onSelect(chosen); };
 
   // Open at once with a loading line; the listing can take a moment (a slow drive).
+  // Clear whatever the last opening left behind, then open at once.
+  $('pickerPath').textContent = '';
+  $('crumbs').replaceChildren();
+  $('drives').replaceChildren();
+  showError('');
+  $('pickerSelect').disabled = true;
   if (!dlg.open) dlg.showModal();
   $('dirList').replaceChildren(el('li', 'empty', 'Loading…'));
   const first = await fetchDir(start).catch(() => null);

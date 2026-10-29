@@ -147,3 +147,14 @@ test('refresh re-reads the command list (it arrives after the first keystroke)',
   api.refresh();
   assert.equal(menu.hidden, false);
 });
+
+test('Enter on a command typed in full sends it whatever the case, and an alias counts too', () => {
+  for (const typed of ['/Clear', '/CLEAR', '/reset']) {
+    const { input, page, type } = setup();
+    type(typed);
+    const e = input.dispatch('keydown', { key: 'Enter' });
+    assert.equal(e.defaultPrevented, false, typed);
+    assert.equal(page.enterCalls, 1, typed);
+    assert.equal(input.value, typed);
+  }
+});
