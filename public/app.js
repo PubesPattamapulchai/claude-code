@@ -1,5 +1,6 @@
 import { renderMarkdown } from '/public/md.js';
 import { openPicker, basename } from '/public/picker.js';
+import { composeContent } from '/public/compose.js';
 import { avatar, thinkingAvatar, flash, loadThemes } from '/public/theme.js';
 
 const $ = (id) => document.getElementById(id);
@@ -319,9 +320,7 @@ async function submitComposer() {
 
   const images = ready.filter((a) => a.kind === 'image');
   const files = ready.filter((a) => a.kind === 'file');
-  const text = [typed || (images.length ? 'See the attached image.' : 'See the attached file.'),
-    files.length ? `Attached files:\n${files.map((f) => `- ${f.path}`).join('\n')}` : ''].filter(Boolean).join('\n\n');
-  const content = [...images.map((a) => a.block), { type: 'text', text }];
+  const content = composeContent(typed, images, files);
 
   const sent = await sendMessage(content, () => {
     const bubble = addMessage('user');
