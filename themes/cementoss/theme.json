@@ -1,0 +1,10 @@
+{
+  "key": "cementoss",
+  "label": "Cementoss (Ishiyama Ken)",
+  "icon": "🧱",
+  "accent": "#bcbcbc",
+  "secondary": "#949494",
+  "hero": "Cementoss",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

@@ -1,0 +1,10 @@
+{
+  "key": "nejire",
+  "label": "Hado (Nejire)",
+  "icon": "🌀",
+  "accent": "#00afff",
+  "secondary": "#00d7ff",
+  "hero": "Nejire-chan",
+  "villain": false,
+  "group": "Big 3"
+}

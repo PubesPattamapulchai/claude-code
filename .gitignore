@@ -1,3 +1,13 @@
 .superpowers/
 node_modules/
 .claude-uploads/
+
+# theme media is user-supplied and copyrighted: never commit
+themes/**/*.gif
+themes/**/*.png
+themes/**/*.jpg
+themes/**/*.jpeg
+themes/**/*.webp
+themes/**/*.mp4
+themes/**/*.webm
+themes/_user.*

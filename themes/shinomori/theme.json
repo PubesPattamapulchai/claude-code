@@ -1,0 +1,10 @@
+{
+  "key": "shinomori",
+  "label": "Shinomori (Hikage)",
+  "icon": "🥷",
+  "accent": "#5f0087",
+  "secondary": "#875f87",
+  "hero": "Shinomori",
+  "villain": false,
+  "group": "One For All"
+}

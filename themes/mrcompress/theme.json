@@ -1,0 +1,10 @@
+{
+  "key": "mrcompress",
+  "label": "Mr. Compress (Sako Atsuhiro)",
+  "icon": "🎪",
+  "accent": "#af0000",
+  "secondary": "#ffffff",
+  "hero": "Mr. Compress",
+  "villain": true,
+  "group": "Villains"
+}

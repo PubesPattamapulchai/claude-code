@@ -1,0 +1,10 @@
+{
+  "key": "powerloader",
+  "label": "Power Loader (Maijima Higari)",
+  "icon": "⛏️",
+  "accent": "#ff5f00",
+  "secondary": "#ffaf00",
+  "hero": "Power Loader",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

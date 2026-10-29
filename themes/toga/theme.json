@@ -1,0 +1,10 @@
+{
+  "key": "toga",
+  "label": "Toga (Himiko)",
+  "icon": "🩸",
+  "accent": "#ffafd7",
+  "secondary": "#ff005f",
+  "hero": "Toga",
+  "villain": true,
+  "group": "Villains"
+}

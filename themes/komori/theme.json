@@ -1,0 +1,10 @@
+{
+  "key": "komori",
+  "label": "Komori (Kinoko)",
+  "icon": "🍄",
+  "accent": "#ff87af",
+  "secondary": "#ffd7af",
+  "hero": "Shemage",
+  "villain": false,
+  "group": "Class 1-B"
+}

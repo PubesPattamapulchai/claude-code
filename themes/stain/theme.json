@@ -1,0 +1,10 @@
+{
+  "key": "stain",
+  "label": "Stain (Akaguro Chizome)",
+  "icon": "🗡️",
+  "accent": "#d70000",
+  "secondary": "#5f0000",
+  "hero": "Stain",
+  "villain": true,
+  "group": "Villains"
+}

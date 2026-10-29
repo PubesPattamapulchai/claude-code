@@ -1,0 +1,10 @@
+{
+  "key": "rocklock",
+  "label": "Rock Lock (Takagi Ken)",
+  "icon": "🔒",
+  "accent": "#585858",
+  "secondary": "#8a8a8a",
+  "hero": "Rock Lock",
+  "villain": false,
+  "group": "Pro Heroes"
+}

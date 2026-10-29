@@ -1,0 +1,10 @@
+{
+  "key": "kendo",
+  "label": "Kendo (Itsuka)",
+  "icon": "👊",
+  "accent": "#d7875f",
+  "secondary": "#ffaf5f",
+  "hero": "Battle Fist",
+  "villain": false,
+  "group": "Class 1-B"
+}

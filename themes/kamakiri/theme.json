@@ -1,0 +1,10 @@
+{
+  "key": "kamakiri",
+  "label": "Kamakiri (Togaru)",
+  "icon": "🦗",
+  "accent": "#00af00",
+  "secondary": "#5fff00",
+  "hero": "Jack Mantis",
+  "villain": false,
+  "group": "Class 1-B"
+}

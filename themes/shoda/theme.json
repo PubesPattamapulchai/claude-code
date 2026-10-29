@@ -1,0 +1,10 @@
+{
+  "key": "shoda",
+  "label": "Shoda (Nirengeki)",
+  "icon": "💣",
+  "accent": "#d75f00",
+  "secondary": "#ff5f00",
+  "hero": "Mines",
+  "villain": false,
+  "group": "Class 1-B"
+}

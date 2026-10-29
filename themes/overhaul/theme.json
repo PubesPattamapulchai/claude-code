@@ -1,0 +1,10 @@
+{
+  "key": "overhaul",
+  "label": "Overhaul (Chisaki Kai)",
+  "icon": "🧤",
+  "accent": "#d7af00",
+  "secondary": "#303030",
+  "hero": "Overhaul",
+  "villain": true,
+  "group": "Villains"
+}

@@ -1,0 +1,10 @@
+{
+  "key": "kodai",
+  "label": "Kodai (Yui)",
+  "icon": "📏",
+  "accent": "#87afff",
+  "secondary": "#afd7ff",
+  "hero": "Rule",
+  "villain": false,
+  "group": "Class 1-B"
+}

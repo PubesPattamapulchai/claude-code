@@ -1,0 +1,10 @@
+{
+  "key": "skeptic",
+  "label": "Skeptic (Chikazoku Tomoyasu)",
+  "icon": "🎮",
+  "accent": "#00d7d7",
+  "secondary": "#5fd7d7",
+  "hero": "Skeptic",
+  "villain": true,
+  "group": "Villains"
+}

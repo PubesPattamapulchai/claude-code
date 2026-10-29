@@ -1,0 +1,10 @@
+{
+  "key": "ladynagant",
+  "label": "Lady Nagant (Tsutsumi Kaina)",
+  "icon": "🎯",
+  "accent": "#ff5faf",
+  "secondary": "#005f00",
+  "hero": "Lady Nagant",
+  "villain": true,
+  "group": "Villains"
+}

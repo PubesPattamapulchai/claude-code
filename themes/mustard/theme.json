@@ -1,0 +1,10 @@
+{
+  "key": "mustard",
+  "label": "Mustard",
+  "icon": "☠️",
+  "accent": "#d7af00",
+  "secondary": "#878700",
+  "hero": "Mustard",
+  "villain": true,
+  "group": "Villains"
+}

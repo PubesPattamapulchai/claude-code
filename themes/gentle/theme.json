@@ -1,0 +1,10 @@
+{
+  "key": "gentle",
+  "label": "Gentle Criminal (Tobita Danjuro)",
+  "icon": "🎩",
+  "accent": "#00875f",
+  "secondary": "#ffd787",
+  "hero": "Gentle Criminal",
+  "villain": true,
+  "group": "Villains"
+}

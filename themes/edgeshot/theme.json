@@ -1,0 +1,10 @@
+{
+  "key": "edgeshot",
+  "label": "Edgeshot (Kamihara Shinya)",
+  "icon": "🥷",
+  "accent": "#00005f",
+  "secondary": "#005f87",
+  "hero": "Edgeshot",
+  "villain": false,
+  "group": "Pro Heroes"
+}

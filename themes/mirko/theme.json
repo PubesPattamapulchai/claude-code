@@ -1,0 +1,10 @@
+{
+  "key": "mirko",
+  "label": "Mirko (Usagiyama Rumi)",
+  "icon": "🐰",
+  "accent": "#ffffff",
+  "secondary": "#ffafd7",
+  "hero": "Mirko",
+  "villain": false,
+  "group": "Pro Heroes"
+}

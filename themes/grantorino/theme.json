@@ -1,0 +1,10 @@
+{
+  "key": "grantorino",
+  "label": "Gran Torino (Torino Sorahiko)",
+  "icon": "👴",
+  "accent": "#005f87",
+  "secondary": "#5f87af",
+  "hero": "Gran Torino",
+  "villain": false,
+  "group": "Pro Heroes"
+}

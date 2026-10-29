@@ -1,0 +1,10 @@
+{
+  "key": "nezu",
+  "label": "Nezu",
+  "icon": "🐭",
+  "accent": "#ffffd7",
+  "secondary": "#ffd7af",
+  "hero": "Nezu",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

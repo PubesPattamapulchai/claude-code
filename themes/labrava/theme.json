@@ -1,0 +1,10 @@
+{
+  "key": "labrava",
+  "label": "La Brava (Aiba Manami)",
+  "icon": "💕",
+  "accent": "#ff5faf",
+  "secondary": "#ffafaf",
+  "hero": "La Brava",
+  "villain": true,
+  "group": "Villains"
+}

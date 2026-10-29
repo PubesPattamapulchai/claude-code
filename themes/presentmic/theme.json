@@ -1,0 +1,10 @@
+{
+  "key": "presentmic",
+  "label": "Present Mic (Yamada Hizashi)",
+  "icon": "🎤",
+  "accent": "#ffff00",
+  "secondary": "#ffd700",
+  "hero": "Present Mic",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

@@ -1,0 +1,10 @@
+{
+  "key": "moonfish",
+  "label": "Moonfish",
+  "icon": "🦈",
+  "accent": "#005f87",
+  "secondary": "#bcbcbc",
+  "hero": "Moonfish",
+  "villain": true,
+  "group": "Villains"
+}

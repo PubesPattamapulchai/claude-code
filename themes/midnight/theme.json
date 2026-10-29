@@ -1,0 +1,10 @@
+{
+  "key": "midnight",
+  "label": "Midnight (Kayama Nemuri)",
+  "icon": "🌙",
+  "accent": "#af00ff",
+  "secondary": "#8700ff",
+  "hero": "Midnight",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

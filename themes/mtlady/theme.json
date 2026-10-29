@@ -1,0 +1,10 @@
+{
+  "key": "mtlady",
+  "label": "Mt. Lady (Takeyama Yu)",
+  "icon": "🗼",
+  "accent": "#ffd700",
+  "secondary": "#ffff00",
+  "hero": "Mt. Lady",
+  "villain": false,
+  "group": "Pro Heroes"
+}

@@ -1,0 +1,10 @@
+{
+  "key": "kudo",
+  "label": "Kudo (Toshitsugu)",
+  "icon": "⚙️",
+  "accent": "#5f87af",
+  "secondary": "#8787af",
+  "hero": "Kudo",
+  "villain": false,
+  "group": "One For All"
+}

@@ -1,0 +1,10 @@
+{
+  "key": "hawks",
+  "label": "Hawks (Takami Keigo)",
+  "icon": "🪶",
+  "accent": "#ff005f",
+  "secondary": "#ffd700",
+  "hero": "Hawks",
+  "villain": false,
+  "group": "Pro Heroes"
+}

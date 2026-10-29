@@ -1,0 +1,10 @@
+{
+  "key": "uwabami",
+  "label": "Uwabami",
+  "icon": "🐍",
+  "accent": "#af5fff",
+  "secondary": "#d7af00",
+  "hero": "Uwabami",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

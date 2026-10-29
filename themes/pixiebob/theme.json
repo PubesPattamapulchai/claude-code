@@ -1,0 +1,10 @@
+{
+  "key": "pixiebob",
+  "label": "Tsuchikawa (Ryuko)",
+  "icon": "🪨",
+  "accent": "#af8700",
+  "secondary": "#875f00",
+  "hero": "Pixie-Bob",
+  "villain": false,
+  "group": "U.A. Faculty"
+}

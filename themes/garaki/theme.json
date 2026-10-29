@@ -1,0 +1,10 @@
+{
+  "key": "garaki",
+  "label": "Dr. Garaki (Ujiko Daruma)",
+  "icon": "🧪",
+  "accent": "#5f875f",
+  "secondary": "#005f00",
+  "hero": "Dr. Garaki",
+  "villain": true,
+  "group": "Villains"
+}
