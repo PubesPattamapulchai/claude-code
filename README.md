@@ -17,11 +17,12 @@ Not logged in? Run `claude` once in a terminal and log in, then retry.
 - Uses Claude Code's own session store, so chats started in a terminal show up in the sessions drawer (the menu button, top left) and `claude --resume` sees chats started here.
 - Pick the project with the folder button in the top bar, or Browse in the drawer. The picker opens at your `D:\` drive (or at the current folder), you walk into sub-folders, and recent projects are one click away. Choosing a different folder starts fresh so messages and attachments stay with one project. You can still type a path.
 - The title card shows the current character and a countdown to the next one.
+- Skills and slash commands work as in the terminal: type `/name arguments` and Claude Code expands it, exactly as it would in a terminal session (your installed plugins, skills and hooks all load). A `/` menu above the box lists every installed skill and command; arrow keys move, Tab or Enter completes, Esc closes. `/clear` starts a fresh conversation. `/help`, `/resume` and `/focus` do not work in this mode and are left out of the menu.
 - Attach with Ctrl+V (screenshots), drag and drop, or the paperclip. Images go to Claude directly. Other files are saved to `<folder>/.claude-uploads/` and Claude reads them by path. Limit 25 MB per file.
 
 ## Themes and your own media
 
-There is no picker: the character changes by itself every minute, through all 108 in a shuffled order that never repeats inside a lap (one lap is 108 minutes). Every tab shows the same character and a reload keeps your place. To restart the rotation, delete the `rotateStart` entry from the page's local storage. Each theme is `themes/<key>/theme.json` (colours, icon, hero name). Media is optional and found by file name. Drop files in `themes/<key>/`:
+There is no theme picker: the character changes by itself every minute, through all 108 in a shuffled order that never repeats inside a lap (one lap is 108 minutes). Every tab shows the same character and a reload keeps your place. To restart the rotation, delete the `rotateStart` entry from the page's local storage. Each theme is `themes/<key>/theme.json` (colours, icon, hero name). Media is optional and found by file name. Drop files in `themes/<key>/`:
 
 | File | Where it shows |
 |---|---|

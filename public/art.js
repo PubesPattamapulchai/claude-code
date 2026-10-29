@@ -9,26 +9,36 @@ function hash(str) {
 }
 const unit = (str) => hash(str) / 4294967296; // [0, 1)
 
-// Themes that share an (unordered) colour pair get different styles, so neighbours never look the same.
+// Colours this close (RGB distance, about one xterm shade) look the same to a person.
+const SIMILAR = 48;
+const channel = (hex, i) => parseInt(hex.slice(1 + 2 * i, 3 + 2 * i), 16);
+const dist = (a, b) => Math.hypot(...[0, 1, 2].map((i) => channel(a, i) - channel(b, i)));
+const near = (a, b) => dist(a, b) <= SIMILAR;
+const alike = (a, b) => (near(a.accent, b.accent) && near(a.secondary, b.secondary)) || (near(a.accent, b.secondary) && near(a.secondary, b.accent));
+
+// Colour the "looks alike" graph: themes are taken in key order and each gets a style no lookalike already has,
+// starting the search at a style picked by its key so the choice varies. Exact same-colour themes are lookalikes
+// too. If every style is taken by a lookalike (a crowd of seven or more), it takes the least used and warns.
 export function styleFor(themes) {
   const sorted = [...themes].sort((a, b) => (a.key < b.key ? -1 : 1));
-  const groups = new Map();
-  for (const t of sorted) {
-    const id = [t.accent, t.secondary].sort().join('|');
-    groups.set(id, [...(groups.get(id) ?? []), t]);
-  }
-
   const out = new Map();
-  for (const group of groups.values()) {
-    if (group.length > STYLES.length) throw new Error(`colour group of ${group.length} themes exceeds the ${STYLES.length} styles`);
-    const base = hash(group[0].key);
-    group.forEach((t, i) => {
-      out.set(t.key, {
-        style: STYLES[(base + i) % STYLES.length],
-        angle: unit(`${t.key}:angle`) * 360,
-        density: 0.6 + unit(`${t.key}:density`) * 0.8,
-        phase: unit(`${t.key}:phase`),
-      });
+  for (const t of sorted) {
+    const used = new Map(); // style -> how many lookalikes already have it
+    for (const o of sorted) {
+      if (o !== t && out.has(o.key) && alike(t, o)) used.set(out.get(o.key).style, (used.get(out.get(o.key).style) ?? 0) + 1);
+    }
+    const start = hash(t.key) % STYLES.length;
+    const order = STYLES.map((_, k) => STYLES[(start + k) % STYLES.length]);
+    let style = order.find((s) => !used.has(s));
+    if (!style) {
+      style = order.reduce((best, s) => (used.get(s) < used.get(best) ? s : best), order[0]);
+      console.warn(`art: no distinct background style left for theme "${t.key}"; it repeats one of its lookalikes`);
+    }
+    out.set(t.key, {
+      style,
+      angle: unit(`${t.key}:angle`) * 360,
+      density: 0.6 + unit(`${t.key}:density`) * 0.8,
+      phase: unit(`${t.key}:phase`),
     });
   }
   return out;

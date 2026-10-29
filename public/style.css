@@ -57,7 +57,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* speed lines: thin white rays from the centre, slowly turning, dark corners */
 .art-speed-lines::before {
-  inset: -60%;
+  inset: auto; left: 50%; top: 50%; width: 142vmax; height: 142vmax; margin: -71vmax 0 0 -71vmax; /* a square that still covers the screen at any rotation */
   background: repeating-conic-gradient(from var(--angle) at 50% 50%, rgb(255 255 255 / 0.5) 0 calc(1.6deg * var(--density)), transparent 0 calc(6deg * var(--density)));
   animation: art-turn 120s linear infinite; animation-delay: calc(var(--phase) * -120s);
 }
@@ -94,7 +94,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* sunburst: wide colour wedges fanning out, turning the other way */
 .art-sunburst::before {
-  inset: -60%;
+  inset: auto; left: 50%; top: 50%; width: 142vmax; height: 142vmax; margin: -71vmax 0 0 -71vmax; /* a square that still covers the screen at any rotation */
   background: repeating-conic-gradient(from var(--angle) at 50% 50%, color-mix(in srgb, var(--secondary) 70%, #fff) 0 calc(7deg * var(--density)), color-mix(in srgb, var(--accent) 70%, #fff) 0 calc(14deg * var(--density)));
   animation: art-turn 160s linear infinite reverse; animation-delay: calc(var(--phase) * -160s);
 }

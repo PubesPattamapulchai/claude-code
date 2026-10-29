@@ -46,7 +46,29 @@ test('parameters stay in range', () => {
   }
 });
 
-test('a colour group larger than the style count is rejected loudly', () => {
+const channel = (hex, i) => parseInt(hex.slice(1 + 2 * i, 3 + 2 * i), 16);
+const dist = (a, b) => Math.hypot(...[0, 1, 2].map((i) => channel(a, i) - channel(b, i)));
+const lookalike = (a, b) => (dist(a.accent, b.accent) <= 48 && dist(a.secondary, b.secondary) <= 48) || (dist(a.accent, b.secondary) <= 48 && dist(a.secondary, b.accent) <= 48);
+
+test('themes whose colours are one shade apart never share a style either', () => {
+  const map = styleFor(themes);
+  const clashes = [];
+  for (let i = 0; i < themes.length; i++) for (let j = i + 1; j < themes.length; j++) {
+    if (lookalike(themes[i], themes[j]) && map.get(themes[i].key).style === map.get(themes[j].key).style) clashes.push(`${themes[i].key}/${themes[j].key}`);
+  }
+  assert.deepEqual(clashes, []);
+  assert.notEqual(map.get('bakugo').style, map.get('sato').style);
+});
+
+test('a crowd of identical colours still gets a valid style for every theme, and warns', () => {
   const same = Array.from({ length: 7 }, (_, i) => ({ key: 'x' + i, accent: '#111111', secondary: '#222222' }));
-  assert.throws(() => styleFor(same), /colour group/);
+  const warn = console.warn;
+  let warned = 0;
+  console.warn = () => { warned++; };
+  try {
+    const map = styleFor(same);
+    assert.equal(map.size, 7);
+    for (const v of map.values()) assert.ok(STYLES.includes(v.style));
+    assert.ok(warned >= 1, 'running out of distinct styles must be reported');
+  } finally { console.warn = warn; }
 });

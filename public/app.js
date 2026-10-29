@@ -214,7 +214,7 @@ async function newChat() {
   clearConversation();
   try { await startChat(); } catch { return; }
   refreshSessions();
-  closeDrawer();
+  closeDrawer({ focusMenu: false });
   $('input').focus();
 }
 
@@ -227,7 +227,7 @@ async function openSession(id) {
     await startChat(id);
   } catch { return; }
   refreshSessions();
-  closeDrawer();
+  closeDrawer({ focusMenu: false });
 }
 
 // ── sessions list ──
@@ -404,13 +404,15 @@ function openDrawer() {
   $('menu').setAttribute('aria-expanded', 'true');
   $('cwd').focus();
 }
-function closeDrawer() {
-  const hadFocus = $('side').contains(document.activeElement);
+// Closing from the scrim, the close button or Escape puts focus back on the menu button (a mouse click on the scrim
+// has already moved focus to <body>, so do not depend on where it was). Choosing a session or New chat passes
+// focusMenu: false because the input takes focus instead.
+function closeDrawer({ focusMenu = true } = {}) {
   $('side').classList.remove('open');
   $('side').inert = true;
   $('scrim').hidden = true;
   $('menu').setAttribute('aria-expanded', 'false');
-  if (hadFocus) $('menu').focus();
+  if (focusMenu === true) $('menu').focus();
 }
 const drawerOpen = () => $('side').classList.contains('open');
 
