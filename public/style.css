@@ -172,6 +172,11 @@ button.quiet { background: transparent; box-shadow: none; border-color: transpar
 .title-text { display: flex; flex-direction: column; min-width: 0; }
 .countdown { color: var(--muted); font-size: 12px; white-space: nowrap; }
 .bar-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-left: auto; }
+.limits { display: flex; gap: 8px; }
+.limit { position: relative; display: inline-flex; gap: 6px; align-items: baseline; padding: 4px 9px; font-size: 12px; color: var(--muted); background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 45%, transparent) var(--pct), transparent var(--pct)), var(--ink); border: 2px solid color-mix(in srgb, var(--paper) 35%, transparent); border-radius: 4px; white-space: nowrap; }
+.limit b { color: var(--paper); font-weight: 700; }
+.limit.warm { border-color: #ffd23f; }
+.limit.hot { border-color: var(--danger); }
 .folder-btn { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* sessions drawer: slides over the art on every width */

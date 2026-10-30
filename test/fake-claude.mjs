@@ -22,6 +22,7 @@ async function turn(text) {
     out({ type: 'system', subtype: 'hook_response', hook_name: 'SessionStart:startup', outcome: 'error', stderr: 'boom\nsecond line', output: '' });
     out({ type: 'system', subtype: 'hook_response', hook_name: 'SessionStart:ok', outcome: 'success', stderr: '', output: 'fine' });
   }
+  out({ type: 'rate_limit_event', rate_limit_info: { status: 'allowed', unifiedWindows: { five_hour: { utilization: 0.23, resetsAt: 1793334000, status: 'allowed' }, seven_day: { utilization: 0.62, resetsAt: 1793505600, status: 'allowed' } } } });
   out({ type: 'system', subtype: 'hook_started', hook_name: 'noise' });
   if (text.includes('DIE')) process.exit(3);
   const delta = (t) => out({ type: 'stream_event', event: { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: t } } });

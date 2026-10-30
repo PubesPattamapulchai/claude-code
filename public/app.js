@@ -117,6 +117,7 @@ function handle(e) {
       state.chatCwd = e.cwd;
       updateFolderBtn();
       break;
+    case 'limits': renderLimits(e.windows); localStorageSet('limits', JSON.stringify(e.windows)); break;
     case 'commands':
       state.commands = e.commands;
       if (document.activeElement === $('input')) slash.refresh();
@@ -429,6 +430,22 @@ function updateFolderBtn() {
   $('folderBtn').textContent = basename(path) || 'Choose folder';
   $('folderBtn').title = path;
 }
+
+// ── plan usage limits (5-hour and weekly windows) ──
+const LIMIT_NAMES = { five_hour: '5h', seven_day: 'Week', seven_day_opus: 'Opus wk', seven_day_sonnet: 'Sonnet wk' };
+function renderLimits(windows) {
+  const rows = Object.entries(windows ?? {}).filter(([, w]) => typeof w?.utilization === 'number');
+  $('limits').hidden = !rows.length;
+  $('limits').replaceChildren(...rows.map(([key, w]) => {
+    const pct = Math.round(w.utilization * 100);
+    const chip = el('span', `limit${pct >= 90 ? ' hot' : pct >= 75 ? ' warm' : ''}`);
+    chip.title = `${LIMIT_NAMES[key] ?? key}: ${pct}% used` + (w.resetsAt ? `, resets ${new Date(w.resetsAt * 1000).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })}` : '');
+    chip.style.setProperty('--pct', `${Math.min(pct, 100)}%`);
+    chip.append(el('span', 'limit-name', LIMIT_NAMES[key] ?? key), el('b', null, `${pct}%`));
+    return chip;
+  }));
+}
+try { renderLimits(JSON.parse(localStorageGet('limits'))); } catch { /* nothing cached yet */ } // shown until the next turn refreshes it
 
 // ── wiring ──
 $('cwdForm').addEventListener('submit', (e) => { e.preventDefault(); newChat(); });
