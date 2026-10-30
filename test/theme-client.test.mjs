@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { onAccent, isVideo, mediaFor, themeAt, SLOT_MS, resolveStart, formatLeft, rotationInfo } from '../public/theme.js';
+import { onAccent, isVideo, mediaFor, realName, themeAt, SLOT_MS, resolveStart, formatLeft, rotationInfo } from '../public/theme.js';
 
 test('onAccent picks the text colour with the higher contrast', () => {
   assert.equal(onAccent('#ffd23f'), '#0c0e1d'); // gold: dark ink
@@ -141,4 +141,15 @@ test('rotationInfo returns the current theme, the next one and the time left', (
   assert.equal(early.current.key, themeAt(ts, 10_000, 10_000).key);
   assert.equal(early.msLeft, 60_000);
   assert.equal(rotationInfo([], 0, 0), undefined);
+});
+
+test('realName takes the name in the trailing parentheses of the label', () => {
+  assert.equal(realName({ label: 'Deku (Midoriya Izuku)' }), 'Midoriya Izuku');
+  assert.equal(realName({ label: 'Mt. Lady (Takeyama Yu)' }), 'Takeyama Yu');
+});
+
+test('realName is empty when the label has no parentheses or no name', () => {
+  assert.equal(realName({ label: 'Bruce Lee' }), '');
+  assert.equal(realName({ label: 'X ()' }), '');
+  assert.equal(realName({}), '');
 });
