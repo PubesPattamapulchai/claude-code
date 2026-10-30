@@ -3,7 +3,10 @@ import { openPicker, basename, samePath, currentFolder } from '/public/picker.js
 import { composeContent } from '/public/compose.js';
 import { attachSlashMenu } from '/public/slash.js';
 import { avatar, thinkingAvatar, flash, loadThemes } from '/public/theme.js';
+import { getTabId, withTab } from '/public/tab.js';
 
+// this browser tab's own chat on the server; blocked storage falls back to a per-load id
+const TAB = (() => { try { return getTabId(sessionStorage); } catch { return getTabId({ getItem: () => null, setItem() {} }); } })();
 const $ = (id) => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
 
@@ -25,7 +28,7 @@ const state = {
 
 // ── api ──
 async function api(path, body) {
-  const res = await fetch(path, body === undefined ? undefined : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const res = await fetch(body === undefined ? withTab(path, TAB) : path, body === undefined ? undefined : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ...body, tab: TAB }) });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw Object.assign(new Error(data.error ?? res.statusText), { status: res.status });
   return data;
@@ -158,7 +161,7 @@ function handle(e) {
 }
 
 function connectEvents() {
-  const es = new EventSource('/api/events');
+  const es = new EventSource(withTab('/api/events', TAB));
   es.onmessage = (m) => handle(JSON.parse(m.data));
 }
 
@@ -212,7 +215,7 @@ async function startChat(resume) {
   }
   state.alive = true;
   state.chatCwd = cwd; // the folder the running chat really works in (the field may be edited afterwards)
-  localStorageSet('cwd', cwd);
+  rememberCwd(cwd);
   updateFolderBtn();
 }
 
@@ -264,7 +267,7 @@ async function loadRecents() {
   const list = await api('/api/projects').catch(() => []);
   state.recents = list;
   $('recents').replaceChildren(...list.map((p) => { const o = el('option'); o.value = p.cwd; return o; }));
-  if (!$('cwd').value) $('cwd').value = localStorageGet('cwd') || list[0]?.cwd || '';
+  if (!$('cwd').value) $('cwd').value = tabGet('cwd') || localStorageGet('cwd') || list[0]?.cwd || '';
 }
 
 // ── sending ──
@@ -372,6 +375,9 @@ function autosize() { const i = $('input'); i.style.height = 'auto'; i.style.hei
 // ── storage that may be unavailable ──
 function localStorageGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
 function localStorageSet(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } }
+function tabGet(k) { try { return sessionStorage.getItem(k); } catch { return null; } }
+// This tab's folder survives its own reload; localStorage only seeds a brand-new tab so other tabs never change it.
+function rememberCwd(cwd) { try { sessionStorage.setItem('cwd', cwd); } catch { /* private mode */ } localStorageSet('cwd', cwd); }
 
 // ── folder picker ──
 function browse() {
@@ -383,7 +389,7 @@ function browse() {
 async function chooseFolder(path) {
   if (state.busy || samePath(path, currentFolder(state, $('cwd').value))) return;
   $('cwd').value = path;
-  localStorageSet('cwd', path);
+  rememberCwd(path);
   state.alive = false;
   state.commands = []; // they belonged to the old folder's project
   clearConversation();
