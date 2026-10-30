@@ -18,6 +18,8 @@ export function onAccent(hex) {
   return contrastInk >= contrastWhite ? INK : '#ffffff';
 }
 export const isVideo = (url) => /\.(mp4|webm)$/i.test(url ?? '');
+// The character's real name is the trailing "(...)" of the label, e.g. "Deku (Midoriya Izuku)"; empty when there is none.
+export const realName = (theme) => /\(([^()]+)\)\s*$/.exec(theme.label ?? '')?.[1].trim() ?? '';
 export const mediaFor = (theme, slot) => ({ url: theme.media?.[slot], icon: theme.icon });
 // ── rotation: wall-clock time -> theme, identical in every tab and across reloads ──
 export const SLOT_MS = 60000;
@@ -181,6 +183,9 @@ export function applyTheme(t) {
   if (first) { void r.offsetWidth; r.style.transition = ''; }
   r.dataset.villain = String(!!t.villain);
   document.getElementById('heroName').textContent = t.hero;
+  const real = document.getElementById('realName');
+  real.textContent = realName(t);
+  real.hidden = !real.textContent;
   document.getElementById('motto').textContent = t.villain ? MOTTO.villain : MOTTO.hero;
 
   const bg = document.getElementById('bg');
