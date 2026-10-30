@@ -32,9 +32,9 @@ before(async () => {
 });
 after(() => server.shutdown());
 
-function req(method, path, { headers = {}, body, auth = true } = {}) {
+function req(method, path, { headers = {}, body, auth = true, port: p = port } = {}) {
   return new Promise((resolve, reject) => {
-    const r = http.request({ agent: false, host: '127.0.0.1', port, method, path, headers: { ...(auth ? { cookie: `lui=${TOKEN}` } : {}), ...headers } }, (res) => {
+    const r = http.request({ agent: false, host: '127.0.0.1', port: p, method, path, headers: { ...(auth ? { cookie: `lui=${TOKEN}` } : {}), ...headers } }, (res) => {
       const chunks = [];
       res.on('data', (c) => chunks.push(c));
       res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks) }));
@@ -45,10 +45,10 @@ function req(method, path, { headers = {}, body, auth = true } = {}) {
 }
 const post = (path, obj, opts = {}) => req('POST', path, { ...opts, headers: { 'content-type': 'application/json', ...opts.headers }, body: JSON.stringify({ tab: opts.tab ?? TAB, ...obj }) });
 
-function sse(tab = TAB) {
+function sse(tab = TAB, p = port) {
   const events = [];
   const waiters = [];
-  const r = http.request({ host: '127.0.0.1', port, path: `/api/events?tab=${tab}`, headers: { cookie: `lui=${TOKEN}` } }, (res) => {
+  const r = http.request({ host: '127.0.0.1', port: p, path: `/api/events?tab=${tab}`, headers: { cookie: `lui=${TOKEN}` } }, (res) => {
     let buf = '';
     res.on('data', (d) => {
       buf += d;
@@ -282,4 +282,60 @@ test('tab-bound endpoints reject a missing or malformed tab id', async () => {
     const g = await req('GET', '/api/events' + (tab === undefined ? '' : `?tab=${encodeURIComponent(tab)}`));
     assert.equal(g.status, 400, `events with tab ${tab}`);
   }
+});
+
+// A second server with a short grace period: a tab whose event streams are all gone loses its chat.
+async function graceServer() {
+  const s = createApp({ token: TOKEN, root, command: [process.execPath, FAKE], home: HOME, graceMs: 200 });
+  await new Promise((r) => s.listen(0, '127.0.0.1', r));
+  return { s, p: s.address().port };
+}
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+test('a tab whose stream stays gone past the grace period loses its chat', async () => {
+  const { s, p } = await graceServer();
+  try {
+    const a = sse(TAB_A, p);
+    await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_A, port: p });
+    await a.until((e) => e.kind === 'chat');
+    a.close();
+    await wait(500);
+    const a2 = sse(TAB_A, p);
+    await wait(400);
+    assert.equal(a2.events.some((e) => e.kind === 'chat'), false, 'the chat must be gone');
+    assert.equal((await post('/api/send', say('hi'), { tab: TAB_A, port: p })).status, 409);
+    a2.close();
+  } finally { await s.shutdown(); }
+});
+
+test('reconnecting within the grace period keeps the chat', async () => {
+  const { s, p } = await graceServer();
+  try {
+    const a = sse(TAB_A, p);
+    await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_A, port: p });
+    await a.until((e) => e.kind === 'chat');
+    a.close();
+    await wait(50);
+    const a2 = sse(TAB_A, p);
+    await wait(500);
+    assert.equal(a2.events.some((e) => e.kind === 'chat'), true, 'the chat must be replayed');
+    assert.equal((await post('/api/send', say('hi'), { tab: TAB_A, port: p })).status, 200);
+    await a2.until((e) => e.kind === 'result');
+    a2.close();
+  } finally { await s.shutdown(); }
+});
+
+test('a timed-out tab does not affect other tabs', async () => {
+  const { s, p } = await graceServer();
+  try {
+    const a = sse(TAB_A, p), b = sse(TAB_B, p);
+    await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_A, port: p });
+    await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_B, port: p });
+    await a.until((e) => e.kind === 'chat');
+    a.close();
+    await wait(500);
+    assert.equal((await post('/api/send', say('hi'), { tab: TAB_B, port: p })).status, 200);
+    await b.until((e) => e.kind === 'result');
+    b.close();
+  } finally { await s.shutdown(); }
 });
