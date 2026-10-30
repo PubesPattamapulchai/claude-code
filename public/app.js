@@ -160,6 +160,7 @@ function handle(e) {
   }
 }
 
+// ponytail: one open stream per tab; browsers allow about 6 connections per host, so 6 tabs stall every request. Share one stream (SharedWorker) if more tabs are needed.
 function connectEvents() {
   const es = new EventSource(withTab('/api/events', TAB));
   es.onmessage = (m) => handle(JSON.parse(m.data));
@@ -452,6 +453,8 @@ function renderLimits(windows) {
   }));
 }
 try { renderLimits(JSON.parse(localStorageGet('limits'))); } catch { /* nothing cached yet */ } // shown until the next turn refreshes it
+// Limits are per account: a turn in any tab refreshes the chips in the others (events now reach only their own tab).
+window.addEventListener('storage', (e) => { if (e.key === 'limits') try { renderLimits(JSON.parse(e.newValue)); } catch { /* bad value */ } });
 
 // ── wiring ──
 $('cwdForm').addEventListener('submit', (e) => { e.preventDefault(); newChat(); });
