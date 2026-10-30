@@ -339,3 +339,62 @@ test('a timed-out tab does not affect other tabs', async () => {
     b.close();
   } finally { await s.shutdown(); }
 });
+
+test('every tab-bound POST rejects a missing or malformed tab id', async () => {
+  for (const path of ['/api/send', '/api/answer', '/api/interrupt', '/api/close']) {
+    for (const tab of [undefined, '', '../x', 'a'.repeat(65)]) {
+      const r = await post(path, { ...say('hi'), requestId: 'r', tab });
+      assert.equal(r.status, 400, `${path} with tab ${tab}`);
+      assert.equal(JSON.parse(r.body).error, 'bad_tab');
+    }
+  }
+});
+
+test('interrupt stops its own tab chat and leaves other tabs alone', async () => {
+  const a = sse(TAB_A), b = sse(TAB_B);
+  await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_A });
+  await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_B });
+  await post('/api/send', say('WRITE'), { tab: TAB_A }); // the fake claude now waits for a permission answer
+  await a.until((e) => e.kind === 'permission');
+  assert.equal((await post('/api/interrupt', {}, { tab: TAB_A })).status, 200);
+  await a.until((e) => e.kind === 'exit');
+  await wait(300);
+  assert.equal(b.events.some((e) => e.kind === 'exit'), false);
+  assert.equal((await post('/api/send', say('hi'), { tab: TAB_B })).status, 200);
+  await b.until((e) => e.kind === 'result');
+  a.close(); b.close();
+});
+
+test('a reconnecting stream gets chat, init and commands replayed', async () => {
+  const { s, p } = await graceServer();
+  try {
+    const a = sse(TAB_A, p);
+    await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_A, port: p });
+    await post('/api/send', say('hi'), { tab: TAB_A, port: p });
+    await a.until((e) => e.kind === 'result');
+    await a.until((e) => e.kind === 'commands');
+    a.close();
+    const a2 = sse(TAB_A, p);
+    await a2.until((e) => e.kind === 'commands');
+    assert.deepEqual(['chat', 'init', 'commands'].filter((k) => a2.events.some((e) => e.kind === k)), ['chat', 'init', 'commands']);
+    a2.close();
+  } finally { await s.shutdown(); }
+});
+
+test('a chat whose tab never opens a stream is closed after the grace period', async () => {
+  const { s, p } = await graceServer();
+  try {
+    assert.equal((await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_A, port: p })).status, 200);
+    await wait(500);
+    assert.equal((await post('/api/send', say('hi'), { tab: TAB_A, port: p })).status, 409);
+  } finally { await s.shutdown(); }
+});
+
+test('requests for an unseen tab leave no chat behind and a bad folder starts none', async () => {
+  const { s, p } = await graceServer();
+  try {
+    await post('/api/close', {}, { tab: TAB_B, port: p });
+    assert.equal((await post('/api/chat', { cwd: join(cwd, 'missing'), mode: 'manual' }, { tab: TAB_B, port: p })).status, 400);
+    assert.equal((await post('/api/send', say('hi'), { tab: TAB_B, port: p })).status, 409);
+  } finally { await s.shutdown(); }
+});
