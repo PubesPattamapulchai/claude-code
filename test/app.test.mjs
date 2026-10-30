@@ -10,6 +10,7 @@ import { createApp } from '../lib/app.js';
 
 const FAKE = fileURLToPath(new URL('./fake-claude.mjs', import.meta.url));
 const HOME = fileURLToPath(new URL('./fixtures/home', import.meta.url));
+const TAB = 'tab-default-0001';
 const TOKEN = 'tok-' + 'a1b2c3d4'.repeat(4);
 const DIR = fileURLToPath(new URL('./fixtures/home/.claude/projects/D--proj-a', import.meta.url));
 utimesSync(DIR + '/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1.jsonl', 1000, 1000); // A older than B
@@ -31,9 +32,9 @@ before(async () => {
 });
 after(() => server.shutdown());
 
-function req(method, path, { headers = {}, body, auth = true } = {}) {
+function req(method, path, { headers = {}, body, auth = true, port: p = port } = {}) {
   return new Promise((resolve, reject) => {
-    const r = http.request({ agent: false, host: '127.0.0.1', port, method, path, headers: { ...(auth ? { cookie: `lui=${TOKEN}` } : {}), ...headers } }, (res) => {
+    const r = http.request({ agent: false, host: '127.0.0.1', port: p, method, path, headers: { ...(auth ? { cookie: `lui=${TOKEN}` } : {}), ...headers } }, (res) => {
       const chunks = [];
       res.on('data', (c) => chunks.push(c));
       res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks) }));
@@ -42,12 +43,12 @@ function req(method, path, { headers = {}, body, auth = true } = {}) {
     r.end(body);
   });
 }
-const post = (path, obj, opts = {}) => req('POST', path, { ...opts, headers: { 'content-type': 'application/json', ...opts.headers }, body: JSON.stringify(obj) });
+const post = (path, obj, opts = {}) => req('POST', path, { ...opts, headers: { 'content-type': 'application/json', ...opts.headers }, body: JSON.stringify({ tab: opts.tab ?? TAB, ...obj }) });
 
-function sse() {
+function sse(tab = TAB, p = port) {
   const events = [];
   const waiters = [];
-  const r = http.request({ host: '127.0.0.1', port, path: '/api/events', headers: { cookie: `lui=${TOKEN}` } }, (res) => {
+  const r = http.request({ host: '127.0.0.1', port: p, path: `/api/events?tab=${tab}`, headers: { cookie: `lui=${TOKEN}` } }, (res) => {
     let buf = '';
     res.on('data', (d) => {
       buf += d;
@@ -230,4 +231,111 @@ test('a running chat announces itself, and new event streams are told about it',
   await new Promise((r) => setTimeout(r, 600));
   assert.equal(s3.events.some((e) => e.kind === 'chat'), false, 'a closed chat must not be announced');
   s.close(); s2.close(); s3.close();
+});
+
+const TAB_A = 'tab-aaaaaaaa';
+const TAB_B = 'tab-bbbbbbbb';
+
+test('two tabs run independent chats: events stay in their own tab', async () => {
+  const a = sse(TAB_A), b = sse(TAB_B);
+  await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_A });
+  await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_B });
+  assert.equal((await post('/api/send', say('hi'), { tab: TAB_A })).status, 200);
+  await a.until((e) => e.kind === 'result');
+  await new Promise((r) => setTimeout(r, 300));
+  assert.equal(b.events.some((e) => ['text_delta', 'assistant', 'result'].includes(e.kind)), false, 'B must not see A turn');
+  assert.equal((await post('/api/send', say('hi'), { tab: TAB_B })).status, 200);
+  await b.until((e) => e.kind === 'result');
+  a.close(); b.close();
+});
+
+test('starting a chat in a second tab does not replace the first tab chat', async () => {
+  const a = sse(TAB_A), b = sse(TAB_B);
+  await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_A });
+  await post('/api/chat', { cwd, mode: 'plan' }, { tab: TAB_B });
+  await new Promise((r) => setTimeout(r, 800)); // a wrongly killed first child's exit would land here
+  assert.equal(a.events.some((e) => e.kind === 'exit'), false);
+  assert.equal((await post('/api/send', say('hi'), { tab: TAB_A })).status, 200);
+  await a.until((e) => e.kind === 'result');
+  a.close(); b.close();
+});
+
+test('close and interrupt only touch their own tab', async () => {
+  const a = sse(TAB_A), b = sse(TAB_B);
+  await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_A });
+  await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_B });
+  await post('/api/close', {}, { tab: TAB_A });
+  await post('/api/interrupt', {}, { tab: TAB_A });
+  await new Promise((r) => setTimeout(r, 500));
+  assert.equal((await post('/api/send', say('hi'), { tab: TAB_A })).status, 409);
+  assert.equal((await post('/api/send', say('hi'), { tab: TAB_B })).status, 200);
+  await b.until((e) => e.kind === 'result');
+  assert.equal(b.events.some((e) => e.kind === 'exit'), false);
+  a.close(); b.close();
+});
+
+test('tab-bound endpoints reject a missing or malformed tab id', async () => {
+  for (const tab of [undefined, '', '../x', 'a'.repeat(65)]) {
+    const r = await post('/api/chat', { cwd, mode: 'manual', tab });
+    assert.equal(r.status, 400, `chat with tab ${tab}`);
+    assert.equal(JSON.parse(r.body).error, 'bad_tab');
+    const g = await req('GET', '/api/events' + (tab === undefined ? '' : `?tab=${encodeURIComponent(tab)}`));
+    assert.equal(g.status, 400, `events with tab ${tab}`);
+  }
+});
+
+// A second server with a short grace period: a tab whose event streams are all gone loses its chat.
+async function graceServer() {
+  const s = createApp({ token: TOKEN, root, command: [process.execPath, FAKE], home: HOME, graceMs: 200 });
+  await new Promise((r) => s.listen(0, '127.0.0.1', r));
+  return { s, p: s.address().port };
+}
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+test('a tab whose stream stays gone past the grace period loses its chat', async () => {
+  const { s, p } = await graceServer();
+  try {
+    const a = sse(TAB_A, p);
+    await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_A, port: p });
+    await a.until((e) => e.kind === 'chat');
+    a.close();
+    await wait(500);
+    const a2 = sse(TAB_A, p);
+    await wait(400);
+    assert.equal(a2.events.some((e) => e.kind === 'chat'), false, 'the chat must be gone');
+    assert.equal((await post('/api/send', say('hi'), { tab: TAB_A, port: p })).status, 409);
+    a2.close();
+  } finally { await s.shutdown(); }
+});
+
+test('reconnecting within the grace period keeps the chat', async () => {
+  const { s, p } = await graceServer();
+  try {
+    const a = sse(TAB_A, p);
+    await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_A, port: p });
+    await a.until((e) => e.kind === 'chat');
+    a.close();
+    await wait(50);
+    const a2 = sse(TAB_A, p);
+    await wait(500);
+    assert.equal(a2.events.some((e) => e.kind === 'chat'), true, 'the chat must be replayed');
+    assert.equal((await post('/api/send', say('hi'), { tab: TAB_A, port: p })).status, 200);
+    await a2.until((e) => e.kind === 'result');
+    a2.close();
+  } finally { await s.shutdown(); }
+});
+
+test('a timed-out tab does not affect other tabs', async () => {
+  const { s, p } = await graceServer();
+  try {
+    const a = sse(TAB_A, p), b = sse(TAB_B, p);
+    await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_A, port: p });
+    await post('/api/chat', { cwd, mode: 'manual' }, { tab: TAB_B, port: p });
+    await a.until((e) => e.kind === 'chat');
+    a.close();
+    await wait(500);
+    assert.equal((await post('/api/send', say('hi'), { tab: TAB_B, port: p })).status, 200);
+    await b.until((e) => e.kind === 'result');
+    b.close();
+  } finally { await s.shutdown(); }
 });
