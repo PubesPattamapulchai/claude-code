@@ -28,7 +28,8 @@ test('text turn emits init, text_delta x2, assistant, result', async () => {
   chat.send(say('hi'));
   assert.equal(chat.busy, true);
   await until((e) => e.kind === 'result');
-  assert.deepEqual(events.map((e) => e.kind).filter((k) => k !== 'commands'), ['init', 'text_delta', 'text_delta', 'assistant', 'result']);
+  assert.deepEqual(events.map((e) => e.kind).filter((k) => k !== 'commands'), ['init', 'limits', 'text_delta', 'text_delta', 'assistant', 'result']);
+  assert.deepEqual(events.find((e) => e.kind === 'limits').windows.seven_day, { utilization: 0.62, resetsAt: 1793505600, status: 'allowed' });
   assert.equal(events.filter((e) => e.kind === 'text_delta').map((e) => e.text).join(''), 'Hello');
   assert.equal(chat.busy, false);
   assert.equal(chat.sessionId, '00000000-0000-4000-8000-000000000001');
